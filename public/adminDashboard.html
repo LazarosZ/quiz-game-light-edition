@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background-color: #f2f2f2; }
+    button { padding: 8px 16px; margin: 5px; }
+  </style>
+</head>
+<body>
+  <h1>Admin Dashboard</h1>
+  <h2>Total Scores</h2>
+  <table id="total-scores-table">
+    <thead>
+      <tr>
+        <th>User ID</th>
+        <th>Username</th>
+        <th>Department</th>
+        <th>Total Quiz Score</th>
+        <th>Quiz Average</th>
+        <th>Total Time Attack Score</th>
+        <th>Time Attack Average</th>
+        <th>Total Image Quiz Score</th>
+        <th>Image Quiz Average</th>
+      </tr>
+    </thead>
+    <tbody id="total-scores-tbody">
+      <!-- Data will be inserted here -->
+    </tbody>
+  </table>
+  
+  <h2>Game Mode Activation Panel</h2>
+  <table id="game-modes-table">
+    <thead>
+      <tr>
+        <th>Game Mode</th>
+        <th>Status</th>
+        <th>Toggle</th>
+      </tr>
+    </thead>
+    <tbody id="game-modes-tbody">
+      <!-- Game mode rows will be inserted here -->
+    </tbody>
+  </table>
+  <p>Enter a username to view their score records:</p>
+  <input type="text" id="username" placeholder="Username">
+  <button id="search-btn">Search</button>
+  <button id="reset-btn">Reset Scores for User</button>
+  <button id="reset-all-btn" style="margin-left:20px;">Reset All Scores</button>
+
+  <table id="scores-table" style="display: none;">
+    <thead>
+      <tr>
+        <th>Username</th>
+        <th>Department</th>
+        <th>Quiz Score</th>
+        <th>Time Attack Score</th>
+        <th>Image Quiz Score</th>
+        <th>Timestamp</th>
+      </tr>
+    </thead>
+    <tbody id="scores-tbody">
+      <!-- Score records will be inserted here -->
+    </tbody>
+  </table>
+
+  <h2>All Users - Scores and Averages</h2>
+  <table id="all-users-table">
+    <thead>
+      <tr>
+        <th>Username</th>
+        <th>Department</th>
+        <th>Quiz Average</th>
+        <th>Time Attack Average</th>
+        <th>Image Quiz Average</th>
+      </tr>
+    </thead>
+    <tbody id="all-users-tbody">
+      <!-- All users data will be inserted here -->
+    </tbody>
+  </table>
+
+  <script>
+    // Existing functionality for search and reset for individual user
+    document.getElementById('search-btn').addEventListener('click', async () => {
+      const username = document.getElementById('username').value.trim();
+      if (!username) {
+        alert('Please enter a username.');
+        return;
+      }
+      
+      try {
+        const response = await fetch(`/api/admin/scores?username=${encodeURIComponent(username)}`, { credentials: 'include' });
+        if (!response.ok) {
+          const errData = await response.json();
+          alert('Error: ' + errData.error);
+          return;
+        }
+        const scores = await response.json();
+        displayScores(scores);
+      } catch (error) {
+        console.error('Error fetching scores:', error);
+        alert('An error occurred while fetching scores.');
+      }
+    });
+    
+    document.getElementById('reset-btn').addEventListener('click', async () => {
+      const username = document.getElementById('username').value.trim();
+      if (!username) {
+        alert('Please enter a username to reset scores.');
+        return;
+      }
+      
+      if (!confirm(`Are you sure you want to reset the scores for ${username}? This action cannot be undone.`)) {
+        return;
+      }
+      
+      try {
+        const response = await fetch(`/api/admin/scores/reset?username=${encodeURIComponent(username)}`, {
+          method: 'DELETE',
+          credentials: 'include'
+        });
+        const result = await response.json();
+        alert(result.message);
+      } catch (error) {
+        console.error('Error resetting scores:', error);
+        alert('An error occurred while resetting scores.');
+      }
+    });
+    
+    // New functionality: Reset All Scores
+    document.getElementById('reset-all-btn').addEventListener('click', async () => {
+      if (!confirm('Are you sure you want to reset all scores? This action cannot be undone.')) {
+        return;
+      }
+      
+      try {
+        const response = await fetch('/api/admin/scores/reset-all', {
+          method: 'DELETE',
+          credentials: 'include'
+        });
+        const result = await response.json();
+        alert(result.message);
+        // Optionally, clear the displayed table
+        document.getElementById('scores-tbody').innerHTML = '';
+        document.getElementById('scores-table').style.display = 'none';
+      } catch (error) {
+        console.error('Error resetting all scores:', error);
+        alert('An error occurred while resetting all scores.');
+      }
+    });
+    
+    function displayScores(scores) {
+      const table = document.getElementById('scores-table');
+      const tbody = document.getElementById('scores-tbody');
+      tbody.innerHTML = ''; // Clear previous results
+      
+      if (scores.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6">No score records found for this user.</td></tr>';
+      } else {
+        scores.forEach(record => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${record.username}</td>
+            <td>${record.department}</td>
+            <td>${record.quiz_score}</td>
+            <td>${record.time_attack_score}</td>
+            <td>${record.image_quiz_score}</td>
+            <td>${new Date(record.timestamp).toLocaleString()}</td>
+          `;
+          tbody.appendChild(row);
+        });
+      }
+      table.style.display = 'table';
+    }
+
+    async function fetchGameModes() {
+      try {
+        const response = await fetch('/api/game_status', { credentials: 'include' });
+        if (!response.ok) {
+          const errData = await response.json();
+          alert("Error: " + errData.error);
+          return;
+        }
+        const gameModes = await response.json();
+        displayGameModes(gameModes);
+      } catch (error) {
+        console.error("Error fetching game modes:", error);
+      }
+    }
+
+    // Display game modes in a table with a toggle button
+    function displayGameModes(gameModes) {
+      const tbody = document.getElementById("game-modes-tbody");
+      tbody.innerHTML = "";
+      gameModes.forEach(mode => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${mode.quiz}</td>
+          <td id="status-${mode.quiz}">${mode.active == 1 ? "Active" : "Inactive"}</td>
+          <td>
+            <button class="toggle-btn" onclick="toggleGameMode('${mode.quiz}', ${mode.active})">
+              Toggle
+            </button>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    // Toggle the active status for a given game mode
+    async function toggleGameMode(quiz, currentStatus) {
+      const newStatus = currentStatus == 1 ? 0 : 1;
+      try {
+        const response = await fetch(`/api/game_status/${quiz}`, {
+          method: 'PUT',
+          headers: { "Content-Type": "application/json" },
+          credentials: 'include',
+          body: JSON.stringify({ active: newStatus })
+        });
+        const result = await response.json();
+        alert(result.message);
+        // Refresh the game modes list after update
+        fetchGameModes();
+      } catch (error) {
+        console.error("Error toggling game mode:", error);
+        alert("An error occurred while updating the game mode status.");
+      }
+    }
+
+    // Fetch game modes when the page loads
+    fetchGameModes();
+
+    async function fetchAllUserAverages() {
+      try {
+        const response = await fetch('/api/admin/all-scores', { credentials: 'include' });
+        if (!response.ok) {
+          const errorData = await response.json();
+          alert('Error fetching user averages: ' + errorData.error);
+          return;
+        }
+        const allUsers = await response.json();
+        displayAllUserAverages(allUsers);
+      } catch (error) {
+        console.error('Error fetching user averages:', error);
+      }
+    }
+    
+    function displayAllUserAverages(users) {
+      const tbody = document.getElementById('all-users-tbody');
+      tbody.innerHTML = '';
+      
+      if (users.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6">No users found.</td></tr>';
+      } else {
+        users.forEach(user => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td><a href="#" onclick="showUserInfo(${user.id}); return false;">${user.username}</a></td>
+            <td>${user.department}</td>
+            <td>${user.quiz_average}</td>
+            <td>${user.time_attack_average}</td>
+            <td>${user.image_quiz_average}</td>
+          `;
+          tbody.appendChild(row);
+        });
+      }
+    }
+
+    async function showUserInfo(userId) {
+      try {
+        const response = await fetch(`/api/admin/userinfo?userId=${userId}`, { credentials: 'include' });
+        if (!response.ok) {
+          const errorData = await response.json();
+          alert('Error fetching user info: ' + errorData.error);
+          return;
+        }
+        const userInfo = await response.json();
+        // Display the user information. For simplicity, we use alert.
+        alert(`User Info:
+Username: ${userInfo.username}
+Department: ${userInfo.department}
+`);
+      } catch (error) {
+        console.error('Error fetching user info:', error);
+        alert('An error occurred while fetching user info.');
+      }
+    }
+    
+    // Initialize the dashboard by fetching all user averages.
+    fetchAllUserAverages();
+
+    async function fetchTotalScores() {
+    try {
+      const response = await fetch('/api/admin/total-scores', { credentials: 'include' });
+      if (!response.ok) {
+        const errData = await response.json();
+        alert('Error: ' + errData.error);
+        return;
+      }
+      const totalScores = await response.json();
+      displayTotalScores(totalScores);
+    } catch (error) {
+      console.error('Error fetching total scores:', error);
+    }
+  }
+  
+  function displayTotalScores(data) {
+    const tbody = document.getElementById('total-scores-tbody');
+    tbody.innerHTML = '';
+    if (data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="9">No score records found.</td></tr>';
+    } else {
+      data.forEach(user => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${user.user_id}</td>
+          <td>${user.username}</td>
+          <td>${user.department}</td>
+          <td>${user.total_quiz_score}</td>
+          <td>${user.avg_quiz_score}</td>
+          <td>${user.total_time_attack_score}</td>
+          <td>${user.avg_time_attack_score}</td>
+          <td>${user.total_image_quiz_score}</td>
+          <td>${user.avg_image_quiz_score}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+  }
+  
+  // Call fetchTotalScores() when the page loads.
+  fetchTotalScores();
+  </script>
+</body>
+</html>

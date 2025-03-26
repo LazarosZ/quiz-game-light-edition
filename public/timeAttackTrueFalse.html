@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Time Attack True/False Game</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    #timer { font-size: 1.5em; margin-bottom: 20px; }
+    #question-container { margin-bottom: 20px; }
+    #feedback { font-weight: bold; margin-top: 10px; }
+    button.option { padding: 10px 20px; margin-right: 10px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>Time Attack True/False Game</h1>
+  <div id="timer">Time Left: <span id="time-left">30</span> seconds</div>
+  <div id="question-container"></div>
+  <div id="feedback"></div>
+
+  <script>
+    let questions = [];
+    let currentQuestionIndex = 0;
+    let remainingTime = 30; // initial timer value
+    let timerInterval;
+    let gameStartTime;
+    let finalScore = 0; // will store final duration in seconds
+
+    // Fetch true/false questions from the server
+    async function fetchQuestions() {
+      try {
+        const response = await fetch('/api/timeattack/truefalse', { credentials: 'include' });
+        const data = await response.json();
+        console.log("Fetched questions:", data);
+        if (!Array.isArray(data) || data.length === 0) {
+          alert("No questions available. Please try again later.");
+          return;
+        }
+        // Store the fetched questions (assumed to be in random order)
+        questions = data;
+        // Record the start time
+        gameStartTime = Date.now();
+        // Display the first question and start the timer
+        displayQuestion();
+        startTimer();
+      } catch (error) {
+        console.error("Error fetching questions:", error);
+      }
+    }
+
+    // Start the countdown timer
+    function startTimer() {
+      document.getElementById('time-left').textContent = remainingTime;
+      timerInterval = setInterval(() => {
+        remainingTime--;
+        document.getElementById('time-left').textContent = remainingTime;
+        if (remainingTime <= 0) {
+          endGame();
+        }
+      }, 1000);
+    }
+
+    // Display the current question
+    function displayQuestion() {
+      // End game if no more questions
+      if (currentQuestionIndex >= questions.length) {
+        endGame();
+        return;
+      }
+      const container = document.getElementById('question-container');
+      container.innerHTML = ""; // Clear previous content
+
+      const question = questions[currentQuestionIndex];
+      // Build a unique group name using the question's category and id
+      const groupName = `question_${question.category}_${question.id}`;
+      
+      // Display the question text
+      container.innerHTML = `<p><strong>Question ${currentQuestionIndex + 1}:</strong> ${question.question}</p>`;
+      
+      // Create "Yes" and "No" buttons as options
+      const yesBtn = document.createElement('button');
+      yesBtn.textContent = "Yes";
+      yesBtn.className = "option";
+      yesBtn.onclick = () => handleAnswer("yes", question.correct);
+
+      const noBtn = document.createElement('button');
+      noBtn.textContent = "No";
+      noBtn.className = "option";
+      noBtn.onclick = () => handleAnswer("no", question.correct);
+
+      container.appendChild(yesBtn);
+      container.appendChild(noBtn);
+
+      // Clear any previous feedback
+      document.getElementById('feedback').textContent = "";
+    }
+
+    // Handle the selected answer and provide immediate feedback
+    function handleAnswer(selected, correctAnswer) {
+      // Disable the option buttons to prevent multiple selections
+      const options = document.querySelectorAll("button.option");
+      options.forEach(btn => btn.disabled = true);
+      
+      const feedbackDiv = document.getElementById('feedback');
+      if (selected.toLowerCase() === correctAnswer.toLowerCase()) {
+        feedbackDiv.textContent = "Correct!";
+        // Add bonus seconds for correct answer
+        remainingTime += 3;
+        document.getElementById('time-left').textContent = remainingTime;
+      } else {
+        feedbackDiv.textContent = "Incorrect!";
+      }
+      
+      // Move to the next question after a short delay (e.g., 1 second)
+      setTimeout(() => {
+        currentQuestionIndex++;
+        displayQuestion();
+      }, 1000);
+    }
+
+    // End the game, compute final score, and submit it
+    function endGame() {
+      clearInterval(timerInterval);
+      // Compute the final score as the duration of the game in seconds
+      finalScore = Math.floor((Date.now() - gameStartTime) / 1000);
+      alert(`Game over! Your final score is: ${finalScore} seconds.`);
+      
+      // Submit the score to the server
+      fetch('/api/timeattack/truefalse/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ score: finalScore })
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log("Score submitted:", data);
+        // Redirect to the dashboard after submission
+        window.location.href = "dashboard.html";
+      })
+      .catch(error => {
+        console.error("Error submitting score:", error);
+        window.location.href = "dashboard.html";
+      });
+    }
+
+    // Start the game by fetching questions when the page loads
+    fetchQuestions();
+  </script>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Image Quiz</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    .question { font-size: 1.2em; margin-bottom: 20px; }
+    .images { display: flex; gap: 20px; }
+    .images img { width: 300px; cursor: pointer; border: 2px solid transparent; }
+    .images img:hover { border-color: #888; }
+  </style>
+</head>
+<body>
+  <h1>Image Quiz</h1>
+  <div id="quiz-container"></div>
+  <div id="feedback" style="display: none;"></div>
+  <script>
+    let questions = [];
+    let currentQuestionIndex = 0;
+    let finalScore = 0; // Keeps track of correct answers
+
+    // Fetch quiz questions from the server.
+    async function fetchQuizQuestions() {
+      try {
+        const response = await fetch('/api/imageQuiz', { credentials: 'include' });
+        questions = await response.json();
+        if (!Array.isArray(questions) || questions.length === 0) {
+          alert("No quiz questions available.");
+          return;
+        }
+        currentQuestionIndex = 0;
+        displayQuestion(currentQuestionIndex);
+      } catch (error) {
+        console.error("Error fetching quiz questions:", error);
+      }
+    }
+
+    // Display one question (with two clickable images) at a time.
+    function displayQuestion(index) {
+      const container = document.getElementById("quiz-container");
+      container.innerHTML = ""; // Clear previous content
+      
+      // If there are no more questions, submit the quiz.
+      if (index >= questions.length) {
+        submitImageQuizScore(finalScore);
+        return;
+      }
+      
+      const q = questions[index];
+      // Create and display question text.
+      const questionEl = document.createElement("div");
+      questionEl.className = "question";
+      questionEl.textContent = `Question ${index + 1}: ${q.question}`;
+      container.appendChild(questionEl);
+      
+      // Create a container for the images.
+      const imagesDiv = document.createElement("div");
+      imagesDiv.className = "images";
+      
+      // Create first image element.
+      const img1 = document.createElement("img");
+      img1.src = q.image1;
+      img1.alt = "Option 1";
+      img1.addEventListener("click", () => handleAnswer("image1", q));
+      
+      // Create second image element.
+      const img2 = document.createElement("img");
+      img2.src = q.image2;
+      img2.alt = "Option 2";
+      img2.addEventListener("click", () => handleAnswer("image2", q));
+      
+      imagesDiv.appendChild(img1);
+      imagesDiv.appendChild(img2);
+      container.appendChild(imagesDiv);
+    }
+
+    function showFeedback(message, type) {
+    const feedbackEl = document.getElementById("feedback");
+    feedbackEl.innerText = message;
+    // Set color based on whether the answer is correct or incorrect
+    feedbackEl.style.color = type === "correct" ? "green" : "red";
+    feedbackEl.style.display = "block";
+    // Hide feedback after 2 seconds
+    setTimeout(() => {
+        feedbackEl.style.display = "none";
+    }, 2000);
+}
+
+    // Handle answer selection: update score, give immediate feedback, then move on.
+    function handleAnswer(selected, question) {
+    if (selected === question.correct) {
+        finalScore++;
+        showFeedback("Correct!", "correct");
+    } else {
+        showFeedback("Incorrect!", "incorrect");
+    }
+    currentQuestionIndex++;
+    displayQuestion(currentQuestionIndex);
+}
+
+    // Submit final score to the server to update the scores table and average.
+    async function submitImageQuizScore(score) {
+      try {
+        const response = await fetch('/api/imageQuiz/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ score })
+        });
+        const result = await response.json();
+        alert(result.message);
+        // Redirect to dashboard after submission.
+        window.location.href = 'dashboard.html';
+      } catch (error) {
+        console.error("Error submitting quiz score:", error);
+        alert("There was an error submitting your score. Please try again.");
+      }
+    }
+
+    // Start the quiz on page load.
+    fetchQuizQuestions();
+  </script>
+</body>
+</html>

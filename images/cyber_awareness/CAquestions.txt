@@ -1,0 +1,10 @@
+1.Which image shows a strong password? 
+2. Which image shows the safest way to handle suspicious emails?
+3.Which image shows safe web browsing practices?
+4.Which image shows a secure way to store passwords? 
+5.Which image shows the safest way to enter a password?
+6.Which image depicts a fraudulent technical support scam?
+7.Which image demonstrates a secure method for handling external USB devices?
+8.Which image illustrates the correct use of Two-Factor Authentication (2FA)?
+9.Which image represents an email attempting to impersonate a legitimate company?
+10.Which image demonstrates the correct procedure for securing your workstation when leaving?

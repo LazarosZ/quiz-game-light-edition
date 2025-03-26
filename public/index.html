@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quiz App Login</title>
+</head>
+<body>
+  <!--
+  <h1>User Registration</h1>
+  <form id="registrationForm">
+    <input type="text" name="username" placeholder="Username" required /><br />
+    <input type="password" name="password" placeholder="Password" required /><br />
+    <input type="text" name="department" placeholder="Department" required /><br />
+    <button type="submit">Register</button>
+  </form>
+  -->
+  <h1>User Login</h1>
+  <form id="loginForm">
+    <input type="text" name="username" placeholder="Username" required /><br />
+    <input type="password" name="password" placeholder="Password" required /><br />
+    <button type="submit">Login</button>
+  </form>
+
+  <script>/// IF NEEDED ---> REGISTER -----> LOGIC IS HERE AND IN -------> authRoutes.js
+    // Handle registration form submission
+    /*
+    document.getElementById('registrationForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const data = {
+        username: formData.get('username'),
+        password: formData.get('password'),
+        department: formData.get('department')
+      };
+
+      try {
+        const response = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        const result = await response.json();
+        alert(result.message || result.error);
+      } catch (error) {
+        console.error('Registration error:', error);
+      }
+    });
+    */
+    // Handle login form submission
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const data = {
+        username: formData.get('username'),
+        password: formData.get('password')
+      };
+
+      try {
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        const result = await response.json();
+        if (result.message) {
+          if(result.user && result.user.role === 'admin'){
+            window.location.href = '/adminDashboard.html';
+          } else {
+            window.location.href = '/dashboard.html';
+          }
+           
+        } else {
+          alert(result.error || 'Login failed');
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+      }
+    });
+  </script>
+</body>
+</html>

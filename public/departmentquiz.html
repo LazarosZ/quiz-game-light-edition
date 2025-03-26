@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Department Quiz</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    .question { margin-bottom: 20px; }
+    .options { margin-bottom: 20px; }
+    #navigation { margin-top: 20px; }
+    button { padding: 8px 16px; }
+  </style>
+</head>
+<body>
+  <h1>Department Quiz</h1>
+  <div id="quiz-container">
+    <!-- The current question will be displayed here -->
+  </div>
+  <div id="navigation">
+    <button id="prev-btn" disabled>Previous</button>
+    <button id="next-btn">Next</button>
+  </div>
+
+  <script>
+    let questions = [];
+    let currentQuestionIndex = 0;
+    let userAnswers = [];
+
+    // Fetch questions from the departmentquiz endpoint
+    async function fetchQuizQuestions() {
+      try {
+        const response = await fetch('/api/departmentquiz', { credentials: 'include' });
+        const data = await response.json();
+        console.log("Fetched quiz questions:", data);
+        if (!Array.isArray(data) || data.length === 0) {
+          alert("No quiz questions available. Please check your department or try again later.");
+          return;
+        }
+        //questions = data;
+        questions = data.slice(0, 30); // limit questions to 30 for all departments
+        userAnswers = Array(questions.length).fill(null);
+        currentQuestionIndex = 0; // Reset index just in case
+        displayQuestion(currentQuestionIndex);
+      } catch (error) {
+        console.error('Error fetching quiz questions:', error);
+      }
+    }
+
+    // Display the question at the given index
+    function displayQuestion(index) {
+      if (!questions || questions.length === 0 || !questions[index]) {
+        console.error("No current question found at index", index);
+        return;
+      }
+      const container = document.getElementById('quiz-container');
+      container.innerHTML = ''; // Clear previous content
+
+      const question = questions[index];
+      // Create a unique radio group name using category and id
+      const groupName = `question_${question.category}_${question.id}`;
+
+      const questionDiv = document.createElement('div');
+      questionDiv.className = 'question';
+      questionDiv.innerHTML = `<p><strong>Question ${index + 1} of ${questions.length}:</strong> ${question.question}</p>`;
+
+      const optionsDiv = document.createElement('div');
+      optionsDiv.className = 'options';
+
+      ['option1', 'option2', 'option3', 'option4'].forEach(optionKey => {
+        const label = document.createElement('label');
+        label.style.display = 'block';
+        label.innerHTML = `<input type="radio" name="${groupName}" value="${optionKey}"> ${question[optionKey]}`;
+        optionsDiv.appendChild(label);
+      });
+
+      container.appendChild(questionDiv);
+      container.appendChild(optionsDiv);
+    }
+      // Record the answer for the current question and automatically advance
+    function recordAnswerAndAdvance() {
+      const currentQuestion = questions[currentQuestionIndex];
+      const groupName = `question_${currentQuestion.category}_${currentQuestion.id}`;
+      const radios = document.getElementsByName(groupName);
+      let selectedOption = null;
+      radios.forEach(radio => {
+        if (radio.checked) {
+          selectedOption = radio.value;
+        }
+      });
+      if (!selectedOption) {
+        alert('Please select an answer before continuing.');
+        return false;
+      }
+      // Record the answer
+      userAnswers[currentQuestionIndex] = { 
+        questionId: currentQuestion.id, 
+        category: currentQuestion.category, 
+        selectedOption 
+      };
+      // Automatically advance to the next question
+      currentQuestionIndex++;
+      if (currentQuestionIndex < questions.length) {
+        displayQuestion(currentQuestionIndex);
+      } else {
+        // Quiz complete – submit the answers for CSV processing
+        submitQuiz();
+      }
+      return true;
+    }
+
+    // Event listener for Next button: record answer and advance
+    document.getElementById('next-btn').addEventListener('click', recordAnswerAndAdvance);
+
+    // Submit the quiz answers
+    async function submitQuiz() {
+
+      const data = { answers: userAnswers };
+      try {
+        const response = await fetch('/api/quiz/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(data)
+        });
+        const result = await response.json();
+        alert(`Your score: ${result.testScore} / ${questions.length}`);
+        // Optionally, redirect to the dashboard after submission
+        window.location.href = 'dashboard.html';
+      } catch (error) {
+        console.error('Error submitting quiz:', error);
+        alert('There was an error submitting your quiz. Please try again.');
+      }
+    }
+
+
+    // Start the quiz by fetching questions when the page loads
+    fetchQuizQuestions();
+  </script>
+</body>
+</html>
