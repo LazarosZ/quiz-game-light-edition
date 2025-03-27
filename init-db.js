@@ -159,4 +159,4 @@ setTimeout(() => {
         console.log('Database connection closed.');
       }
     });
-  }, 5000);
+  }, 2000);
