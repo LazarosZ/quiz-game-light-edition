@@ -1,29 +1,7 @@
-// index.js
-//require('dotenv').config(); // Load environment variables
-const express = require('express');
-//const mysql = require('mysql2');
-const session = require('express-session');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
-const app = express();
-const port = 3000; //process.env.PORT ||
-app.use('/images', express.static(path.join(__dirname, 'images')));
-
-// Middleware to parse JSON bodies
-app.use(express.json());
-
-app.use(session({
-    secret: 'your-secret-key', // Replace with a strong secret in production
-    resave: false,
-    saveUninitialized: false,
-    cookie: { secure: false } // Set secure: true if using HTTPS
-  }));
-
-// Serve static files from the "public" folder (this will serve index.html by default)
-app.use(express.static('public'));
-app.use(express.urlencoded({ extended: true }));
-
+// Set up the SQLite database file (adjust the path as needed)
 const dbPath = path.join(__dirname, 'quiz_game_db.sqlite');
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
@@ -32,9 +10,8 @@ const db = new sqlite3.Database(dbPath, (err) => {
     console.log('Connected to SQLite database.');
   }
 });
-
 db.configure("busyTimeout", 5000);
-/*
+
 db.serialize(() => {
   //  users table
   db.run(`
@@ -174,34 +151,12 @@ db.serialize(() => {
   `);
 });
 
-*/
-app.use((req, res, next) => {
-  req.db = db;
-  next();
-});
-
-// Mount route modules
-const authRoutes = require('./routes/authRoutes');
-//const questionRoutes = require('./routes/questionRoutes');
-const quizRoutes = require('./routes/quizRoutes');
-const departmentQuizRoutes = require('./routes/departmentQuizRoutes');
-const adminRoutes = require('./routes/adminRoutes');
-//const timeAttackRoutes = require('./routes/timeAttackRoutes');
-const trueFalseRoutes = require('./routes/trueFalseRoutes');
-const gameStatusRoutes = require('./routes/gameStatusRoutes');
-const imageQuizRoutes = require('./routes/imageQuizRoutes');
-
-app.use('/api/auth', authRoutes);
-//app.use('/api/questions', questionRoutes);
-app.use('/api/quiz', quizRoutes);
-app.use('/api/departmentquiz', departmentQuizRoutes);
-app.use('/api/admin', adminRoutes);
-//app.use('/api/timeattack', timeAttackRoutes);
-app.use('/api/timeattack/truefalse', trueFalseRoutes);
-app.use('/api/game_status', gameStatusRoutes);
-app.use('/api/imageQuiz', imageQuizRoutes);
-
-
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-});
+setTimeout(() => {
+    db.close(err => {
+      if (err) {
+        console.error('Error closing database:', err);
+      } else {
+        console.log('Database connection closed.');
+      }
+    });
+  }, 5000);
