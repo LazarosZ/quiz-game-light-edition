@@ -84,6 +84,23 @@
       <!-- All users data will be inserted here -->
     </tbody>
   </table>
+  <h2>User Information</h2>
+  <table id="user-info-table">
+    <tbody id="user-info-body">
+      <!-- User info will be inserted here -->
+    </tbody>
+  </table>
+  
+  <h2>User CSV Data</h2>
+  <table id="csv-table">
+    <thead id="csv-head">
+      <!-- CSV header row will be inserted here -->
+    </thead>
+    <tbody id="csv-body">
+      <!-- CSV rows will be inserted here -->
+    </tbody>
+  </table>
+
 
   <script>
     // Existing functionality for search and reset for individual user
@@ -282,10 +299,9 @@
         }
         const userInfo = await response.json();
         // Display the user information. For simplicity, we use alert.
-        alert(`User Info:
-Username: ${userInfo.username}
-Department: ${userInfo.department}
-`);
+        displayUserInfo(userInfo);
+        // Also fetch the CSV for this user.
+        fetchUserCSV(userInfo.username);
       } catch (error) {
         console.error('Error fetching user info:', error);
         alert('An error occurred while fetching user info.');
@@ -334,6 +350,42 @@ Department: ${userInfo.department}
     }
   }
   
+
+  function displayUserInfo(user) {
+      const tbody = document.getElementById('user-info-body');
+      tbody.innerHTML = `
+        <tr><td>User ID</td><td>${user.id}</td></tr>
+        <tr><td>Username</td><td>${user.username}</td></tr>
+        <tr><td>Department</td><td>${user.department}</td></tr>
+      `;
+    }
+    
+    // Fetch CSV data for the user.
+    async function fetchUserCSV(username) {
+      try {
+        const response = await fetch(`/api/admin/usercsv?username=${encodeURIComponent(username)}`, { credentials: 'include' });
+        if (!response.ok) {
+          const errorData = await response.json();
+          alert('Error fetching CSV data: ' + errorData.error);
+          return;
+        }
+        const csvData = await response.json();
+        displayCSV(csvData);
+      } catch (error) {
+        console.error('Error fetching CSV data:', error);
+        alert('An error occurred while fetching CSV data.');
+      }
+    }
+    
+    // Display CSV data in the CSV table.
+    function displayCSV(data) {
+      const head = document.getElementById('csv-head');
+      const body = document.getElementById('csv-body');
+      // Create header row.
+      head.innerHTML = `<tr>${data.headers.map(header => `<th>${header}</th>`).join('')}</tr>`;
+      // Create rows for CSV data.
+      body.innerHTML = data.rows.map(row => `<tr>${row.map(cell => `<td>${cell}</td>`).join('')}</tr>`).join('');
+    }
   // Call fetchTotalScores() when the page loads.
   fetchTotalScores();
   </script>

@@ -190,6 +190,7 @@ const adminRoutes = require('./routes/adminRoutes');
 const trueFalseRoutes = require('./routes/trueFalseRoutes');
 const gameStatusRoutes = require('./routes/gameStatusRoutes');
 const imageQuizRoutes = require('./routes/imageQuizRoutes');
+const csvRoutes = require('./routes/csvRoutes');
 
 app.use('/api/auth', authRoutes);
 //app.use('/api/questions', questionRoutes);
@@ -200,7 +201,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/timeattack/truefalse', trueFalseRoutes);
 app.use('/api/game_status', gameStatusRoutes);
 app.use('/api/imageQuiz', imageQuizRoutes);
-
+app.use('/api/admin', csvRoutes);
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);

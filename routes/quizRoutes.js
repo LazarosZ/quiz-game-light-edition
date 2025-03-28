@@ -162,7 +162,7 @@ router.post('/submit', async (req, res) => {
                 
                 // If the CSV file doesn't exist, create it with a header.
                 if (!fs.existsSync(filePath)) {
-                  fs.writeFileSync(filePath, 'Question,Correct Answer,Answer Given\n');
+                  fs.writeFileSync(filePath, 'Question,Correct Answer,Answer Given,Category,Result\n');
                 }
                 
                 // For each answer, fetch the question text and correct answer.
