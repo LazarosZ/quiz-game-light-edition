@@ -34,6 +34,38 @@ const db = new sqlite3.Database(dbPath, (err) => {
 });
 
 db.configure("busyTimeout", 5000);
+
+app.use((req, res, next) => {
+  req.db = db;
+  next();
+});
+
+// Mount route modules
+const authRoutes = require('./routes/authRoutes');
+//const questionRoutes = require('./routes/questionRoutes');
+const quizRoutes = require('./routes/quizRoutes');
+const departmentQuizRoutes = require('./routes/departmentQuizRoutes');
+const adminRoutes = require('./routes/adminRoutes');
+//const timeAttackRoutes = require('./routes/timeAttackRoutes');
+const trueFalseRoutes = require('./routes/trueFalseRoutes');
+const gameStatusRoutes = require('./routes/gameStatusRoutes');
+const imageQuizRoutes = require('./routes/imageQuizRoutes');
+const csvRoutes = require('./routes/csvRoutes');
+
+app.use('/api/auth', authRoutes);
+//app.use('/api/questions', questionRoutes);
+app.use('/api/quiz', quizRoutes);
+app.use('/api/departmentquiz', departmentQuizRoutes);
+app.use('/api/admin', adminRoutes);
+//app.use('/api/timeattack', timeAttackRoutes);
+app.use('/api/timeattack/truefalse', trueFalseRoutes);
+app.use('/api/game_status', gameStatusRoutes);
+app.use('/api/imageQuiz', imageQuizRoutes);
+app.use('/api/admin', csvRoutes);
+
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
+});
 /*
 db.serialize(() => {
   //  users table
@@ -175,34 +207,4 @@ db.serialize(() => {
 });
 
 */
-app.use((req, res, next) => {
-  req.db = db;
-  next();
-});
 
-// Mount route modules
-const authRoutes = require('./routes/authRoutes');
-//const questionRoutes = require('./routes/questionRoutes');
-const quizRoutes = require('./routes/quizRoutes');
-const departmentQuizRoutes = require('./routes/departmentQuizRoutes');
-const adminRoutes = require('./routes/adminRoutes');
-//const timeAttackRoutes = require('./routes/timeAttackRoutes');
-const trueFalseRoutes = require('./routes/trueFalseRoutes');
-const gameStatusRoutes = require('./routes/gameStatusRoutes');
-const imageQuizRoutes = require('./routes/imageQuizRoutes');
-const csvRoutes = require('./routes/csvRoutes');
-
-app.use('/api/auth', authRoutes);
-//app.use('/api/questions', questionRoutes);
-app.use('/api/quiz', quizRoutes);
-app.use('/api/departmentquiz', departmentQuizRoutes);
-app.use('/api/admin', adminRoutes);
-//app.use('/api/timeattack', timeAttackRoutes);
-app.use('/api/timeattack/truefalse', trueFalseRoutes);
-app.use('/api/game_status', gameStatusRoutes);
-app.use('/api/imageQuiz', imageQuizRoutes);
-app.use('/api/admin', csvRoutes);
-
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-});
