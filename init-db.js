@@ -1,7 +1,6 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
-// Set up the SQLite database file (adjust the path as needed)
 const dbPath = path.join(__dirname, 'quiz_game_db.sqlite');
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {

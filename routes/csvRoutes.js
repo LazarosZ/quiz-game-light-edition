@@ -4,9 +4,9 @@ const path = require('path');
 const router = express.Router();
 
 // GET /api/admin/usercsv?username=<username>
-// Returns CSV data as JSON with header and rows arrays.
+// GET CSV, RETURNS CSV DATA AS JSON WITH HEADER AND ROW ARRAYS
 router.get('/usercsv', (req, res) => {
-  // Only allow admin access.
+  // ADMIN ACCESS
   if (!req.session.user || req.session.user.role !== 'admin') {
     return res.status(401).json({ error: 'Unauthorized: Only admin can access user CSV data.' });
   }
@@ -16,7 +16,8 @@ router.get('/usercsv', (req, res) => {
     return res.status(400).json({ error: 'Missing username query parameter.' });
   }
   
-  // Assume CSV files are stored in a folder named 'csv' at the root.
+  // CSV FILES ARE STORED IN /CSV IN ROOT FOLDER
+  // EACH USER HAS A CSV WITH HIS/HERS NAME, AFTER COMPLETING AT ELAST ONCE THE "DEPARTMENT QUIZ"
   const csvDir = path.join(__dirname, '..', 'csv');
   const filePath = path.join(csvDir, `${username}.csv`);
 
@@ -26,8 +27,7 @@ router.get('/usercsv', (req, res) => {
       return res.status(500).json({ error: 'Error reading CSV file', details: err });
     }
     
-    // Very simple CSV parsing: assumes that fields don't contain commas.
-    // For production, consider using a robust CSV parsing library.
+    //QUESTIONS WITH COMMAS "MESS UP" THE VIEWING TABLE ################ TO BE FIXED ##############
     const lines = data.trim().split('\n');
     if (lines.length === 0) {
       return res.json({ headers: [], rows: [] });

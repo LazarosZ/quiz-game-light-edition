@@ -3,7 +3,7 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const router = express.Router();
 
-// User Registration Endpoint
+// USER REGISTRATION, ######  CURRENTLY NOT IMPLEMENTED  #############
 router.post('/register', (req, res) => {
   console.log('Register request received:', req.body);
   const { username, password, department } = req.body;
@@ -42,7 +42,7 @@ router.post('/register', (req, res) => {
   });
 });
 
-// User Login Endpoint
+// USER LOGIN
 router.post('/login', (req, res) => {
   console.log('Login request received:', req.body);
   const { username, password } = req.body;
@@ -50,7 +50,7 @@ router.post('/login', (req, res) => {
   if (!username || !password) {
     return res.status(400).json({ error: 'Please provide username and password' });
   }
-
+// GET ALL FROM users
   req.db.get('SELECT * FROM users WHERE username = ?', [username], function(err, row) {
     if (err) {
       console.error('Database error:', err);
@@ -60,6 +60,7 @@ router.post('/login', (req, res) => {
       return res.status(401).json({ error: 'Invalid username or password' });
     }
 
+    // CHECK PASSWORD
     const user = row;
     bcrypt.compare(password, user.password, function(err, match) {
       if (err) {

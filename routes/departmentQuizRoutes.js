@@ -2,8 +2,9 @@
 const express = require('express');
 const router = express.Router();
 
-// Define department-specific tables and question sets
-// the logic is that 'accounting' is mot tested on manual-handling and working-on-height
+//TABLES FOR QUESTION SETS
+// WAREHOUSE SEES ALL
+// ACCOUNTING DOES NOT SEE: MANUAL-HANDLING AND WORKING-ON-HEIGHT
 const departmentTables = {
   accounting: [
     { name: 'cyber_questions', category: 'cyber' },
@@ -39,7 +40,7 @@ router.get('/', (req, res) => {
     return res.status(400).json({ error: 'No quiz available for your department' });
   }
   
-  const numQuestionsPerTable = 10; // Adjust as needed
+  const numQuestionsPerTable = 10; // ADJUST IF NEEDED ( IF WE HAVE MORE QUESTIONS)
   const promises = tables.map(tableObj => {
     return new Promise((resolve, reject) => {
       req.db.all(
@@ -49,14 +50,14 @@ router.get('/', (req, res) => {
           if (err) {
             return reject(err);
           }
-          // Attach the category to each question for clarity on the client side
+          // ATTACH CATEGORY TO QUESTION FOR CLARITY
           rows = rows.map(q => ({ ...q, category: tableObj.category }));
           resolve(rows);
         }
       );
     });
   });
-
+// SHUFFLE QUESTIONS
   function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));

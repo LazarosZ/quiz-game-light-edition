@@ -29,13 +29,14 @@ router.get('/scores', (req, res) => {
   });
 });
 
+// DELETE reset scores for specific user, selected through search-bar
 router.delete('/scores/reset', (req, res) => {
   const username = req.query.username;
   if (!username) {
     return res.status(400).json({ error: 'Username is required to reset scores' });
   }
 
-  // First, find the user's ID from the username.
+  // GET users id by username
   req.db.get('SELECT id FROM users WHERE username = ?', [username], function(err, row) {
     if (err) {
       console.error('Error fetching user:', err);
@@ -47,14 +48,14 @@ router.delete('/scores/reset', (req, res) => {
 
     const userId = row.id;
     
-    // Delete scores for that user.
+    // DELETE SCORES FOT USER
     req.db.run('DELETE FROM scores WHERE user_id = ?', [userId], function(err) {
       if (err) {
         console.error('Error resetting scores:', err);
         return res.status(500).json({ error: 'Database error resetting scores', details: err });
       }
       
-      // Optionally, delete or reset the user's record in the average table.
+      // DELETE AVERAGE FOR USER
       req.db.run('DELETE FROM average WHERE user_id = ?', [userId], function(err) {
         if (err) {
           console.error('Error resetting averages:', err);
@@ -67,20 +68,21 @@ router.delete('/scores/reset', (req, res) => {
   });
 });
 
+// RESET ALL SCORES
 router.delete('/scores/reset-all', (req, res) => {
-  // Check that the requester is an admin
+  // ADMIN VALIDATION
   if (!req.session.user || req.session.user.role !== 'admin') {
     return res.status(401).json({ error: 'Unauthorized: Only admins can reset all scores.' });
   }
 
-  // Delete all records from the scores table
+  // DELETE ALL SCORES FROM SCORES TABLE
   req.db.run('DELETE FROM scores', function(err) {
     if (err) {
       console.error('Error resetting all scores:', err);
       return res.status(500).json({ error: 'Database error resetting all scores', details: err });
     }
 
-    // Optionally, delete all records from the average table as well
+    // DELETE ALL AVERAGES FROM AVERAGE TABLE
     req.db.run('DELETE FROM average', function(err) {
       if (err) {
         console.error('Error resetting averages:', err);
@@ -92,8 +94,9 @@ router.delete('/scores/reset-all', (req, res) => {
   });
 });
 
+// ALL AVERAGES FROM AVERAGE TABLE
 router.get('/all-scores', (req, res) => {
-  // Ensure only admins can access this endpoint.
+  // ADMIN VALIDATION
   if (!req.session.user || req.session.user.role !== 'admin') {
     return res.status(401).json({ error: 'Unauthorized: Only admin can access this endpoint.' });
   }
@@ -116,13 +119,14 @@ router.get('/all-scores', (req, res) => {
       console.error('Error fetching user scores:', err);
       return res.status(500).json({ error: 'Database error fetching user scores' });
     }
-    // Return the results as JSON.
+
     res.json(rows);
   });
 });
 
+//GET USER INFO
 router.get('/userinfo', (req, res) => {
-  // Only allow admin access.
+  // ADMIN VALIDATION
   if (!req.session.user || req.session.user.role !== 'admin') {
     return res.status(401).json({ error: 'Unauthorized: Only admin can access user info.' });
   }
@@ -132,7 +136,7 @@ router.get('/userinfo', (req, res) => {
     return res.status(400).json({ error: 'Missing userId query parameter.' });
   }
 
-  // Adjust the columns as needed. Here, we assume users table has an email column, etc.
+  // USER INFO, CAN BE EXTENDED LATER WITH EMAIL, EMPLOYED SINCE, SALARY, ETC ETC
   req.db.get('SELECT id, username, department FROM users WHERE id = ?', [userId], (err, row) => {
     if (err) {
       console.error('Error fetching user info:', err);
@@ -145,8 +149,9 @@ router.get('/userinfo', (req, res) => {
   });
 });
 
+// GET SUM OF ALL SCORES, (TO BE DISPLAYED NEXT TO AVERAGE FOR REFERENCE)
 router.get('/total-scores', (req, res) => {
-  // Ensure that only an admin can access this endpoint.
+  // ADMIN CHECK
   if (!req.session.user || req.session.user.role !== 'admin') {
     return res.status(401).json({ error: 'Unauthorized: Only admins can access total scores.' });
   }

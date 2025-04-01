@@ -2,7 +2,7 @@ const sqlite3 = require('sqlite3').verbose();
 const bcrypt = require('bcrypt');
 const path = require('path');
 
-// Set up the SQLite database file (adjust the path as needed)
+// SET UP DATABASE FILE
 const dbPath = path.join(__dirname, 'quiz_game_db.sqlite');
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
@@ -12,7 +12,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
   }
 });
 
-// Define an array of users to insert
+// ARRAY OF USERS 
 const users = [
   { username: 'tasos', password: 'tasos123', department: 'warehouse' },
   { username: 'chara', password: 'chara123', department: 'accounting' },
@@ -22,14 +22,14 @@ const users = [
   { username: 'admin', password: 'admin123', department: 'admin', role: 'admin' }
 ];
 
-// Use serialize to ensure sequential execution
+// "function" TO INSERT USERS WITH "PRE"HASHED PASSWORDS
 db.serialize(() => {
   users.forEach(user => {
     bcrypt.hash(user.password, 10, (err, hash) => {
       if (err) {
         console.error('Error hashing password for', user.username, err);
       } else {
-        // Default role is 'user' unless specified otherwise
+        // DEFAULT IS "user", UNLESS WRITEN OTHERWISE
         const role = user.role || 'user';
         db.run(
           'INSERT OR IGNORE INTO users (username, password, role, department) VALUES (?, ?, ?, ?)',
@@ -45,6 +45,10 @@ db.serialize(() => {
       }
     });
   });
+  
+  // IMPORTANT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  // THE IMAGES FOLDER IS IN THE ROOT FOLDER, WITH THE index.js, ANY CHANGES TO STRUCTURE WILL "BREAK" THE URLs, example: /images/manual_handling/1w.jpg ....
+
 
 
   // INSERT into IMAGE questions
@@ -235,7 +239,7 @@ db.serialize(() => {
         `);
 });
 
-// Close the database after a short delay to ensure all inserts finish.
+// CLOSE DATABASE CONNECTION
 setTimeout(() => {
   db.close(err => {
     if (err) {

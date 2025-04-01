@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 
 // GET /api/game_status
-// Retrieves all game modes and their active status.
+// Retrieves all game modes and their active status
+// USED IN ADMINDASHBOARD TO TOGGLE ACTIVE INACTIVE
 router.get('/', (req, res) => {
   req.db.all('SELECT * FROM game_status', [], (err, rows) => {
     if (err) {

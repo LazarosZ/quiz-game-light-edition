@@ -1,7 +1,7 @@
 // index.js
-//require('dotenv').config(); // Load environment variables
+//require('dotenv').config(); // Load environment variables // NOT NEEDED LOCALLY, WILL USE IN PRODUCTION!!
 const express = require('express');
-//const mysql = require('mysql2');
+//const mysql = require('mysql2'); // SAME AS DOTENV
 const session = require('express-session');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
@@ -20,7 +20,7 @@ app.use(session({
     cookie: { secure: false } // Set secure: true if using HTTPS
   }));
 
-// Serve static files from the "public" folder (this will serve index.html by default)
+// Serve static files from the "public" folder, serves index.html
 app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true }));
 
@@ -42,22 +42,22 @@ app.use((req, res, next) => {
 
 // Mount route modules
 const authRoutes = require('./routes/authRoutes');
-//const questionRoutes = require('./routes/questionRoutes');
+//const questionRoutes = require('./routes/questionRoutes'); // TESTING REMAININGS, TO BE CLEANED UP
 const quizRoutes = require('./routes/quizRoutes');
 const departmentQuizRoutes = require('./routes/departmentQuizRoutes');
 const adminRoutes = require('./routes/adminRoutes');
-//const timeAttackRoutes = require('./routes/timeAttackRoutes');
-const trueFalseRoutes = require('./routes/trueFalseRoutes');
+//const timeAttackRoutes = require('./routes/timeAttackRoutes'); // TESTING REMAININGS, TO BE CLEANED UP
+const trueFalseRoutes = require('./routes/trueFalseRoutes'); // NEW TIME ATTACK ROUTES
 const gameStatusRoutes = require('./routes/gameStatusRoutes');
 const imageQuizRoutes = require('./routes/imageQuizRoutes');
 const csvRoutes = require('./routes/csvRoutes');
 
 app.use('/api/auth', authRoutes);
-//app.use('/api/questions', questionRoutes);
+//app.use('/api/questions', questionRoutes); //TESTING REMAININGS, TO BE CLEANED UP
 app.use('/api/quiz', quizRoutes);
 app.use('/api/departmentquiz', departmentQuizRoutes);
 app.use('/api/admin', adminRoutes);
-//app.use('/api/timeattack', timeAttackRoutes);
+//app.use('/api/timeattack', timeAttackRoutes);// TESTING REMAININGS, TO BE CLEANED UP
 app.use('/api/timeattack/truefalse', trueFalseRoutes);
 app.use('/api/game_status', gameStatusRoutes);
 app.use('/api/imageQuiz', imageQuizRoutes);
@@ -66,6 +66,8 @@ app.use('/api/admin', csvRoutes);
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
+
+//TESTING REMAININGS, TO BE CLEANED UP
 /*
 db.serialize(() => {
   //  users table

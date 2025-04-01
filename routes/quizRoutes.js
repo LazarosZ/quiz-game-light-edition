@@ -4,7 +4,7 @@ const router = express.Router();
 const fs = require('fs');
 const path = require('path');
 
-// Map categories to their corresponding table names
+// Map categories to their corresponding table names  ###### // TESTING "LEFT-OVERS" TO BE CLEANED UP #######
 //const tableMapping = {
  // fire: 'fire_questions',
  // electro: 'electro_questions',
@@ -41,6 +41,8 @@ const departmentTables = {
  * GET /api/quiz
  * Fetches 10 random questions from each category (total 20 questions).
  */
+
+// CURRENTLY NOT USED ENDPOINT, SEE-------> DEPARTMENTQUIZROUTES.JS
 router.get('/', (req, res) => {
   const tables = [
     { name: 'handling_questions', category: 'handling' },
@@ -74,7 +76,8 @@ router.get('/', (req, res) => {
 });
 
 
-
+// SUBMIT ENDPOINT USED FROM DEPARTMENTQUIZROUTES
+// CREATION OF CSV
 router.post('/submit', async (req, res) => {
   // Ensure the user is logged in via the session.
   if (!req.session.user) {
@@ -213,7 +216,7 @@ router.post('/submit', async (req, res) => {
     return res.status(500).json({ error: 'Error processing quiz submission', details: error });
   }
 });
-
+//MODIFIED ENDPOINT, CURRENTLY NOT USED, SEE----------------> DEPARTMENTQUIZROUTES.JS
 router.get('/departmentquiz', (req, res) => {
   // Ensure the user is logged in
   if (!req.session.user) {

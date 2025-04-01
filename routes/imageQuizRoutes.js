@@ -8,7 +8,7 @@ router.get('/', (req, res) => {
     return res.status(401).json({ error: 'Unauthorized: Please log in to access the quiz.' });
   }
   
-  // Use SQLite's RANDOM() to return the questions in random order.
+  // Use SQLite's RANDOM() to return the questions in random order
   req.db.all('SELECT * FROM image_questions ORDER BY RANDOM()', [], (err, rows) => {
     if (err) {
       console.error("Error fetching image questions:", err);
@@ -25,13 +25,13 @@ router.post('/submit', async (req, res) => {
     }
     
     const userId = req.session.user.id;
-    const { score } = req.body;  // score is the image quiz score in this example
+    const { score } = req.body;  // SCORE HERE IS IMAGE-QUIZ-SCORE
     
     if (typeof score !== 'number') {
       return res.status(400).json({ error: 'Invalid score provided.' });
     }
     
-    // Insert the image quiz score into the scores table.
+    // INSERT IMAGE-QUIZ-SCORE IN SCORES TABLE
     req.db.run(
       'INSERT INTO scores (user_id, image_quiz_score) VALUES (?, ?)',
       [userId, score],
@@ -41,7 +41,7 @@ router.post('/submit', async (req, res) => {
           return res.status(500).json({ error: 'Database error inserting score', details: err });
         }
         
-        // Now compute the new image quiz average for this user.
+        // COMPUTE NEW AVERAGE
         req.db.get(
           'SELECT AVG(image_quiz_score) AS newImageAverage FROM scores WHERE user_id = ?',
           [userId],
@@ -54,7 +54,7 @@ router.post('/submit', async (req, res) => {
             const newImageAverageValue = row.newImageAverage;
             const newImageAverage = newImageAverageValue ? Math.round(Number(newImageAverageValue)) : 0;
             
-            // Update the average table using INSERT OR REPLACE.
+            // UPDATE AVERAGE WITH NEW VALUE
             // This query retrieves the existing id (if any) for the user and replaces the row.
             req.db.run(
               `INSERT OR REPLACE INTO average (id, user_id, image_average, quiz_average, time_average)

@@ -20,7 +20,7 @@ router.get('/', (req, res) => {
 });
 
 router.post('/submit', (req, res) => {
-    // Ensure the user is logged in via the session.
+    // Ensure the user is logged in via the session
     if (!req.session.user) {
       return res.status(401).json({ error: 'Unauthorized: Please log in to submit your score.' });
     }
@@ -28,13 +28,12 @@ router.post('/submit', (req, res) => {
     const userId = req.session.user.id;
     const { score } = req.body;
     
-    // Validate the score: it must be a number.
+    // Validate the score: it must be a number
     if (typeof score !== 'number') {
       return res.status(400).json({ error: 'Invalid score provided.' });
     }
     
     // Insert the time attack score into the scores table.
-    // We set the other game scores (quiz_score and image_quiz_score) to 0.
     req.db.run(
       'INSERT INTO scores (user_id, time_attack_score) VALUES (?, ?)',
       [userId, score],
@@ -78,71 +77,4 @@ router.post('/submit', (req, res) => {
     );
   });
   
-
-/*
-router.post('/submit', (req, res) => {
-    // Ensure the user is logged in via the session.
-    if (!req.session.user) {
-      return res.status(401).json({ error: 'Unauthorized: Please log in to submit your score.' });
-    }
-    
-    const userId = req.session.user.id;
-    const { score } = req.body;
-    
-    // Validate the score: it must be a number.
-    if (typeof score !== 'number') {
-      return res.status(400).json({ error: 'Invalid score provided.' });
-    }
-    
-    // Insert the time attack score into the scores table.
-    // We set the other game scores (quiz_score and image_quiz_score) to 0.
-    req.pool.query(
-      'INSERT INTO scores (user_id, time_attack_score, quiz_score, image_quiz_score) VALUES (?, ?, ?, ?)',
-      [userId, score, 0, 0],
-      (err, result) => {
-        if (err) {
-          console.error("Error inserting time attack score:", err);
-          return res.status(500).json({ error: 'Database error inserting score', details: err });
-        }
-        res.json({ message: 'Time Attack score submitted', score });
-
-        req.pool.query(
-            'SELECT AVG(time_attack_score) AS newQuizAverage FROM scores WHERE user_id = ?',
-            [userId],
-            (err, avgResults) => {
-              if (err) {
-                console.error('Error computing quiz average:', err);
-                return res.status(500).json({ error: 'Database error computing quiz average', details: err });
-              }
-              console.log('AVG query results:', avgResults);
-              // Convert the computed average to an integer since quiz_average is an INT
-              const newQuizAverageValue = avgResults[0].newQuizAverage;
-              const newQuizAverage = newQuizAverageValue ? Math.round(Number(newQuizAverageValue)) : 0;
-              
-              // Upsert the new quiz average into the average table
-              req.pool.query(
-                `INSERT INTO average (user_id, time_average) 
-                 VALUES (?, ?)
-                 ON DUPLICATE KEY UPDATE time_average = ?`,
-                [userId, newQuizAverage, newQuizAverage],
-                (err, result) => {
-                  if (err) {
-                    console.error('Error updating average table:', err);
-                    return res.status(500).json({ error: 'Database error updating average table', details: err });
-                  }
-                  res.json({ message: 'Quiz submitted and average updated', testScore: score, newQuizAverage });
-                }
-              );
-            }
-          );
-      }
-    );
-
-    // After inserting the new quiz score record...
-
-  });
-
-  
-  
-*/
 module.exports = router;
