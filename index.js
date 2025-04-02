@@ -52,6 +52,9 @@ const gameStatusRoutes = require('./routes/gameStatusRoutes');
 const imageQuizRoutes = require('./routes/imageQuizRoutes');
 const csvRoutes = require('./routes/csvRoutes');
 
+const cors = require('cors');
+app.use(cors()); // Allows all origins
+
 app.use('/api/auth', authRoutes);
 //app.use('/api/questions', questionRoutes); //TESTING REMAININGS, TO BE CLEANED UP
 app.use('/api/quiz', quizRoutes);
