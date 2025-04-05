@@ -51,6 +51,7 @@ const trueFalseRoutes = require('./routes/trueFalseRoutes'); // NEW TIME ATTACK 
 const gameStatusRoutes = require('./routes/gameStatusRoutes');
 const imageQuizRoutes = require('./routes/imageQuizRoutes');
 const csvRoutes = require('./routes/csvRoutes');
+const userProfileRoutes = require('./routes/userProfileRoutes')
 
 const cors = require('cors');
 app.use(cors()); // Allows all origins
@@ -65,6 +66,7 @@ app.use('/api/timeattack/truefalse', trueFalseRoutes);
 app.use('/api/game_status', gameStatusRoutes);
 app.use('/api/imageQuiz', imageQuizRoutes);
 app.use('/api/admin', csvRoutes);
+app.use('/api', userProfileRoutes);
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);

@@ -148,7 +148,7 @@ router.get('/userinfo', (req, res) => {
     res.json(row);
   });
 });
-
+// GET --> username, first & last Name, email, department, total-score & AVG
 // GET SUM OF ALL SCORES, (TO BE DISPLAYED NEXT TO AVERAGE FOR REFERENCE)
 router.get('/total-scores', (req, res) => {
   // ADMIN CHECK
@@ -160,6 +160,9 @@ router.get('/total-scores', (req, res) => {
     SELECT 
       u.id AS user_id,
       u.username,
+      u.firstName,
+      u.lastName,
+      u.email,
       u.department,
       COALESCE(SUM(s.quiz_score), 0) AS total_quiz_score,
       COALESCE(AVG(s.quiz_score), 0) AS avg_quiz_score,
@@ -171,6 +174,43 @@ router.get('/total-scores', (req, res) => {
     LEFT JOIN scores s ON u.id = s.user_id
     GROUP BY u.id, u.username, u.department
     ORDER BY u.username;
+  `;
+  
+  req.db.all(query, [], (err, rows) => {
+    if (err) {
+      console.error('Error fetching total scores:', err);
+      return res.status(500).json({ error: 'Database error fetching total scores', details: err });
+    }
+    res.json(rows);
+  });
+});
+
+router.get('/leaderboard', (req, res) => {
+
+  const query = `
+    SELECT 
+  user_id,
+  firstName,
+  lastName,
+  department,
+  total_quiz_score,
+  total_time_attack_score,
+  total_image_quiz_score,
+  (total_quiz_score + total_time_attack_score + total_image_quiz_score) AS overall_total
+FROM (
+  SELECT 
+    u.id AS user_id,
+    u.firstName,
+    u.lastName,
+    u.department,
+    COALESCE(SUM(s.quiz_score), 0) AS total_quiz_score,
+    COALESCE(SUM(s.time_attack_score), 0) AS total_time_attack_score,
+    COALESCE(SUM(s.image_quiz_score), 0) AS total_image_quiz_score
+  FROM users u
+  LEFT JOIN scores s ON u.id = s.user_id
+  GROUP BY u.id, u.firstName, u.lastName, u.department
+) AS aggregated
+ORDER BY overall_total DESC;
   `;
   
   req.db.all(query, [], (err, rows) => {

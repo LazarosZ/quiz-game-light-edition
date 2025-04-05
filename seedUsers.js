@@ -14,12 +14,12 @@ const db = new sqlite3.Database(dbPath, (err) => {
 
 // ARRAY OF USERS 
 const users = [
-  { username: 'tasos', password: 'tasos123', department: 'warehouse' },
-  { username: 'chara', password: 'chara123', department: 'accounting' },
-  { username: 'laz', password: 'laz123', department: 'warehouse' },
-  { username: 'thanos', password: 'thanos123', department: 'accounting' },
-  { username: 'alkis', password: 'alkis123', department: 'warehouse' },
-  { username: 'admin', password: 'admin123', department: 'admin', role: 'admin' }
+  { username: 'tasos', password: 'tasos123', firstName: 'Anastasios', lastName: 'Kosmidis', email: 'tasos@bugabused.com', department: 'warehouse' },
+  { username: 'chara', password: 'chara123', firstName: 'Charikleia', lastName: 'Niouraki', email: 'chara@bugabused.com', department: 'accounting' },
+  { username: 'lazos', password: 'laz123', firstName: 'Lazaros', lastName: 'Zinonidis', email: 'lazos@bugabused.com',department: 'warehouse' },
+  { username: 'thanos', password: 'thanos123', firstName: 'Athanasios', lastName: 'Katsikis', email: 'thanos@bugabused.com',department: 'accounting' },
+  { username: 'alkis', password: 'alkis123', firstName: 'Alkiviadis', lastName: 'Van der Spoel', email: 'alkis@bugabused.com',department: 'warehouse' },
+  { username: 'admin', password: 'admin123', firstName: 'Robert', lastName: 'Sapolsky', email: 'admin@bugabused.com',department: 'admin', role: 'admin' }
 ];
 
 // "function" TO INSERT USERS WITH "PRE"HASHED PASSWORDS
@@ -32,8 +32,8 @@ db.serialize(() => {
         // DEFAULT IS "user", UNLESS WRITEN OTHERWISE
         const role = user.role || 'user';
         db.run(
-          'INSERT OR IGNORE INTO users (username, password, role, department) VALUES (?, ?, ?, ?)',
-          [user.username, hash, role, user.department],
+          'INSERT OR IGNORE INTO users (username, password, firstName, lastName, email, role, department) VALUES (?, ?, ?, ?, ?, ?, ?)',
+          [user.username, hash, user.firstName, user.lastName, user.email, role, user.department],
           function(err) {
             if (err) {
               console.error('Error inserting user:', err);
