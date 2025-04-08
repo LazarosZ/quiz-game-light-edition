@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
+// GET USER INFO by ID (with total score calculated)
 router.get('/profile/:id', (req, res) => {
     const userId = req.params.id;
     
@@ -53,9 +54,9 @@ router.get('/profile/:id', (req, res) => {
     });
   });
 
+  // GET USER RANK by ID
   router.get('/userrank/:id', (req, res) => {
     const userId = req.params.id;
-    // This query calculates the user's overall total score, then counts how many users have a higher overall total.
     const query = `
       SELECT 1 + (
   SELECT COUNT(*) FROM (
@@ -97,7 +98,7 @@ router.get('/profile/:id', (req, res) => {
       if (!row) {
         return res.status(404).json({ error: 'User not found or no score data available' });
       }
-      res.json(row); // e.g., { "rank": 3 }
+      res.json(row);
     });
   });
   
