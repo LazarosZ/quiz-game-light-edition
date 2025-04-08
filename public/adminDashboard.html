@@ -107,6 +107,7 @@
       <!-- User info will be inserted here -->
     </tbody>
   </table>
+  <div id="rank-div"></div>
   
   <h2>User CSV Data</h2>
   <table id="csv-table">
@@ -295,7 +296,7 @@
         users.forEach(user => {
           const row = document.createElement('tr');
           row.innerHTML = `
-            <td><a href="#" onclick="showUserInfo(${user.id}); return false;">${user.username}</a></td>
+            <td><a href="#" onclick="showUserInfo(${user.id}); getRank(${user.id}); return false;">${user.username}</a></td>
             <td>${user.department}</td>
             <td>${user.quiz_average}</td>
             <td>${user.time_attack_average}</td>
@@ -325,6 +326,22 @@
       }
     }
 
+    async function getRank(userId) {
+      try {
+        const response = await fetch(`/api/userrank/${userId}`, { credentials: 'include' });
+        if (!response.ok) {
+          const errorData = await response.json();
+          alert('Error fetching Rank: ' + errorData.error);
+          return;
+        }
+        const userRank = await response.json();
+        displayRank(userRank);
+      } catch (error) {
+        console.error('Error fetching Rank:', error);
+        alert('An error occurred while fetching Rank.');
+      }
+    }
+
     function displayUserInfo(user) {
       const tbody = document.getElementById('user-info-body');
       tbody.innerHTML = `
@@ -338,6 +355,14 @@
         <tr><td>Average Time: </td><td>${user.avg_time_attack_score}</td></tr>
         <tr><td>Total Image Quiz Score: </td><td>${user.total_image_quiz_score}</td></tr>
         <tr><td>Average Image: </td><td>${user.avg_image_quiz_score}</td></tr>
+        <tr><td>Total Score: </td><td>${user.overall_total}</td></tr>
+      `;
+    }
+
+    function displayRank(user) {
+      const rankDiv = document.getElementById('rank-div');
+      rankDiv.innerHTML = `
+      <h3>User Rank : ${user.rank}</h3>
       `;
     }
     
