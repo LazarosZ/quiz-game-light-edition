@@ -17,6 +17,6 @@ npm run setupDB
 ```sh
 npm run start
 ```
-5. To test a dummy front end you can visit localhost:300. The actual front end is in the other repository that also contains the necessary instructions.
+5. To test a dummy front end you can visit localhost:3000. The actual front end is in the other repository that also contains the necessary instructions.
 
 ## IMPORTANT: usernames and passwords are inside the file seedUsers.js
