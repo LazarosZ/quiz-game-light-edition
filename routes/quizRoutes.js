@@ -37,11 +37,7 @@ const departmentTables = {
   ]
 };
 
-/**
- * GET /api/quiz
- * Fetches 10 random questions from each category (total 20 questions).
- */
-
+//GET /api/quiz
 // CURRENTLY NOT USED ENDPOINT, SEE-------> DEPARTMENTQUIZROUTES.JS
 router.get('/', (req, res) => {
   const tables = [
@@ -63,12 +59,10 @@ router.get('/', (req, res) => {
         console.error(`Error fetching questions from ${tableObj.name}:`, err);
         return res.status(500).json({ error: 'Database error fetching questions' });
       }
-      // Add a category property to each question for later reference
       rows = rows.map(q => ({ ...q, category: tableObj.category }));
       questions = questions.concat(rows);
       completed++;
       if (completed === tables.length) {
-        // Optionally, shuffle the 20 questions here if desired
         res.json(questions);
       }
     });
@@ -79,7 +73,7 @@ router.get('/', (req, res) => {
 // SUBMIT ENDPOINT USED FROM DEPARTMENTQUIZROUTES
 // CREATION OF CSV
 router.post('/submit', async (req, res) => {
-  // Ensure the user is logged in via the session.
+  // LOGIN STATUS
   if (!req.session.user) {
     return res.status(401).json({ error: 'Unauthorized: Please log in to submit the quiz.' });
   }
@@ -91,13 +85,12 @@ router.post('/submit', async (req, res) => {
   }
   
   try {
-    // Process each answer as a promise.
+    // CHECK EACH ANSWER
     const answerPromises = answers.map(answer => {
       return new Promise((resolve, reject) => {
         const { questionId, category, selectedOption } = answer;
         const tableName = tableMapping[category];
         if (!tableName) {
-          // Invalid category; count as incorrect.
           return resolve(false);
         }
         req.db.get(
@@ -121,7 +114,7 @@ router.post('/submit', async (req, res) => {
     const score = resultsArray.filter(isCorrect => isCorrect === true).length;
     console.log('Computed score:', score);
     
-    // Insert the quiz score into the scores table.
+    // INSERT QUIZ SCORE
     req.db.run(
       'INSERT INTO scores (user_id, quiz_score) VALUES (?, ?)',
       [userId, score],
@@ -131,7 +124,7 @@ router.post('/submit', async (req, res) => {
           return res.status(500).json({ error: 'Database error inserting score', details: err });
         }
         
-        // Compute the new quiz average.
+        // FIND NEW AVERAGE
         req.db.get(
           'SELECT AVG(quiz_score) AS newQuizAverage FROM scores WHERE user_id = ?',
           [userId],
@@ -144,7 +137,7 @@ router.post('/submit', async (req, res) => {
             const newQuizAverageValue = avgRow.newQuizAverage;
             const newQuizAverage = newQuizAverageValue ? Math.round(Number(newQuizAverageValue)) : 0;
             
-            // Upsert into the average table.
+            // INSERT NEW AVERAGE
             req.db.run(
               `INSERT OR REPLACE INTO average (user_id, quiz_average) 
                VALUES (?, ?)
@@ -157,13 +150,12 @@ router.post('/submit', async (req, res) => {
                 }
                 
                 // CSV Saving Logic:
-                // Determine the CSV file path based on the username.
                 const username = req.session.user.username;
                 const csvDir = path.join(__dirname, '..', 'csv');
                 fs.mkdirSync(csvDir, { recursive: true });
                 const filePath = path.join(csvDir, `${username}.csv`);
                 
-                // If the CSV file doesn't exist, create it with a header.
+                // If CSV file doesnt exist, is created here with header.
                 if (!fs.existsSync(filePath)) {
                   fs.writeFileSync(filePath, 'Question,Correct Answer,Answer Given,Category,Result\n');
                 }
@@ -179,8 +171,8 @@ router.post('/submit', async (req, res) => {
                       (err, row) => {
                       if (err) return reject(err);
                       if (!row) return resolve('');
-                      //const row = results[0];
-                      // Create a CSV line, wrapping text in double quotes and escaping double quotes.
+                      //const row = results[0];// MYSQL LEFTOVERS, IGNORE
+                      //CREATE CSV LINE
                       const result = selectedOption === row.correct ? "Correct" : "Wrong";
                       const csvLine = `"${row.question.replace(/"/g, '""')}","${row.correct}","${selectedOption}","${tableName}","${result}"\n`;
                       resolve(csvLine);
@@ -194,7 +186,6 @@ router.post('/submit', async (req, res) => {
                     fs.appendFile(filePath, csvContent, (err) => {
                       if (err) {
                         console.error("Error writing to CSV file:", err);
-                        // Even if CSV writing fails, we send a response.
                         return res.json({ message: 'Quiz submitted and average updated, but CSV saving failed.', testScore: score, newQuizAverage });
                       }
                       return res.json({ message: 'Quiz submitted, average updated, and CSV saved', testScore: score, newQuizAverage });
@@ -218,7 +209,6 @@ router.post('/submit', async (req, res) => {
 });
 //MODIFIED ENDPOINT, CURRENTLY NOT USED, SEE----------------> DEPARTMENTQUIZROUTES.JS
 router.get('/departmentquiz', (req, res) => {
-  // Ensure the user is logged in
   if (!req.session.user) {
     return res.status(401).json({ error: 'Unauthorized: Please log in to get a quiz' });
   }
@@ -231,8 +221,6 @@ router.get('/departmentquiz', (req, res) => {
   }
   
   const numQuestionsPerTable = 10;
-  
-  // Create a promise for each table query
   const promises = tables.map(tableObj => {
     return new Promise((resolve, reject) => {
       req.db.all(
@@ -242,16 +230,16 @@ router.get('/departmentquiz', (req, res) => {
           if (err) {
             return reject(err);
           }
-          // Attach the category to each question so the client knows where it came from
+          // Attach the category to each question
           const mappedRows = rows.map(q => ({ ...q, category: tableObj.category}));
-          //results = results.map(q => ({ ...q, category: tableObj.category }));
+          //results = results.map(q => ({ ...q, category: tableObj.category }));// MYSQL LEFTOVERS, IGNORE
           resolve(mappedRows);
         }
       );
     });
   });
   
-  // Wait for all queries to finish, then flatten the results and return them
+  // WAIT QUERIES TO FINISH AND RETURN THEM
   Promise.all(promises)
     .then(resultsArrays => {
       const allQuestions = [].concat(...resultsArrays);

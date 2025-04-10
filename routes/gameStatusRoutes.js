@@ -3,7 +3,7 @@ const router = express.Router();
 
 // GET /api/game_status
 // Retrieves all game modes and their active status
-// USED IN ADMINDASHBOARD TO TOGGLE ACTIVE INACTIVE
+// USED IN ADMINDASHBOARD TO TOGGLE ACTIVE-INACTIVE
 router.get('/', (req, res) => {
   req.db.all('SELECT * FROM game_status', [], (err, rows) => {
     if (err) {
@@ -16,17 +16,17 @@ router.get('/', (req, res) => {
 
 // PUT /api/game_status/:quiz
 // Updates the active status for a given game mode.
-// The request body should include an "active" property (0 or 1).
+// 1-->ACTIVE 0-->NOT
 router.put('/:quiz', (req, res) => {
-  // Check that the requester is an admin.
+  // Check ADMIN STATUS
   if (!req.session.user || req.session.user.role !== 'admin') {
     return res.status(401).json({ error: 'Unauthorized: Only admin can update game statuses' });
   }
   
-  const quiz = req.params.quiz; // e.g., 'quiz', 'image_quiz', etc.
+  const quiz = req.params.quiz;
   const { active } = req.body;
   
-  // Validate the active value.
+  // CHECK IF ACTIVE
   if (active === undefined) {
     return res.status(400).json({ error: 'Missing active status in request body' });
   }

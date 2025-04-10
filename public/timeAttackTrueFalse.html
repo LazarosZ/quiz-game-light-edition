@@ -21,12 +21,12 @@
   <script>
     let questions = [];
     let currentQuestionIndex = 0;
-    let remainingTime = 30; // initial timer value
+    let remainingTime = 30; // INITIAL TIME, TO BE DISCUSSED, TEAM DECIDES
     let timerInterval;
     let gameStartTime;
     let finalScore = 0; // will store final duration in seconds
 
-    // Fetch true/false questions from the server
+    // GET QUESTIONS TIMEATTACK ENDPOINT
     async function fetchQuestions() {
       try {
         const response = await fetch('/api/timeattack/truefalse', { credentials: 'include' });
@@ -36,11 +36,11 @@
           alert("No questions available. Please try again later.");
           return;
         }
-        // Store the fetched questions (assumed to be in random order)
+        // STORE RANDOMLY FETCHED QUESTIONS
         questions = data;
-        // Record the start time
+        // RECORD STARTING TIME
         gameStartTime = Date.now();
-        // Display the first question and start the timer
+        // SHOW QUESTION AND RUN TIME
         displayQuestion();
         startTimer();
       } catch (error) {
@@ -91,11 +91,11 @@
       container.appendChild(yesBtn);
       container.appendChild(noBtn);
 
-      // Clear any previous feedback
+      // Clear previous feedback
       document.getElementById('feedback').textContent = "";
     }
 
-    // Handle the selected answer and provide immediate feedback
+    // Handle selected answer and immediate feedback
     function handleAnswer(selected, correctAnswer) {
       // Disable the option buttons to prevent multiple selections
       const options = document.querySelectorAll("button.option");
@@ -105,13 +105,13 @@
       if (selected.toLowerCase() === correctAnswer.toLowerCase()) {
         feedbackDiv.textContent = "Correct!";
         // Add bonus seconds for correct answer
-        remainingTime += 3;
+        remainingTime += 3;// TEAM DECIDES 
         document.getElementById('time-left').textContent = remainingTime;
       } else {
         feedbackDiv.textContent = "Incorrect!";
       }
       
-      // Move to the next question after a short delay (e.g., 1 second)
+      // Move to the next question after a short delay (e.g., 1 second)// TEAM DECIDES
       setTimeout(() => {
         currentQuestionIndex++;
         displayQuestion();
@@ -121,11 +121,11 @@
     // End the game, compute final score, and submit it
     function endGame() {
       clearInterval(timerInterval);
-      // Compute the final score as the duration of the game in seconds
+      // Compute the final score as the duration of the game in seconds// TEAM DECIDES
       finalScore = Math.floor((Date.now() - gameStartTime) / 1000);
       alert(`Game over! Your final score is: ${finalScore} seconds.`);
       
-      // Submit the score to the server
+      // SUBMIT ENDPOINT OF TRUEFALSE 
       fetch('/api/timeattack/truefalse/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

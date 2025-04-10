@@ -1,5 +1,5 @@
 // index.js
-//require('dotenv').config(); // Load environment variables // NOT NEEDED LOCALLY, WILL USE IN PRODUCTION!!
+//require('dotenv').config(); // NOT NEEDED LOCALLY, WILL USE IN PRODUCTION!!
 const express = require('express');
 //const mysql = require('mysql2'); // SAME AS DOTENV
 const session = require('express-session');
@@ -7,20 +7,18 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
 const app = express();
-const port = 3000; //process.env.PORT ||
+const port = 3000; 
 app.use('/images', express.static(path.join(__dirname, 'images')));
 
-// Middleware to parse JSON bodies
 app.use(express.json());
 
 app.use(session({
-    secret: 'your-secret-key', // Replace with a strong secret in production
+    secret: 'your-secret-key',
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false } // Set secure: true if using HTTPS
+    cookie: { secure: false } 
   }));
 
-// Serve static files from the "public" folder, serves index.html
 app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true }));
 
@@ -40,7 +38,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// Mount route modules
 const authRoutes = require('./routes/authRoutes');
 //const questionRoutes = require('./routes/questionRoutes'); // TESTING REMAININGS, TO BE CLEANED UP
 const quizRoutes = require('./routes/quizRoutes');

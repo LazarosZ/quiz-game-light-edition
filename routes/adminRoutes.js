@@ -2,10 +2,9 @@
 const express = require('express');
 const router = express.Router();
 
-/**
- * GET /api/admin/scores?username=<username>
- * Returns the score records for the user with the given username.
- */
+ //GET /api/admin/scores?username=<username>
+ //Returns the score records for the user with the given username. CURRENTLY NOT USED
+ 
 router.get('/scores', (req, res) => {
   const username = req.query.username;
   if (!username) {

@@ -21,7 +21,7 @@
     let currentQuestionIndex = 0;
     let finalScore = 0; // Keeps track of correct answers
 
-    // Fetch quiz questions from the server.
+    // GET QUESTIONS FROM IMAGEQUIZ ENDPOINT
     async function fetchQuizQuestions() {
       try {
         const response = await fetch('/api/imageQuiz', { credentials: 'include' });
@@ -37,7 +37,7 @@
       }
     }
 
-    // Display one question (with two clickable images) at a time.
+    // ONE QUESTION, 2 IMAGES C-->CORRECT, W--> WRONG BY IMAGE NAME FOR EASY (HUMAN) READING
     function displayQuestion(index) {
       const container = document.getElementById("quiz-container");
       container.innerHTML = ""; // Clear previous content
@@ -100,7 +100,7 @@
     displayQuestion(currentQuestionIndex);
 }
 
-    // Submit final score to the server to update the scores table and average.
+    // OWN SUBMIT ENDPOINT OF IMAGEQUIZROUTES, INSERT SCORE AND UPDATE AVERAGE
     async function submitImageQuizScore(score) {
       try {
         const response = await fetch('/api/imageQuiz/submit', {

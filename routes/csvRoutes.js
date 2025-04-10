@@ -27,7 +27,7 @@ router.get('/usercsv', (req, res) => {
       return res.status(500).json({ error: 'Error reading CSV file', details: err });
     }
     
-    //QUESTIONS WITH COMMAS "MESS UP" THE VIEWING TABLE ################ TO BE FIXED ##############
+    //COMMAS ISSUE FIXED
     const lines = data.trim().split('\n');
     if (lines.length === 0) {
       return res.json({ headers: [], rows: [] });

@@ -15,7 +15,7 @@
 <body>
   <h1>Welcome to the Game Dashboard!</h1>
   <div id="games-links">
-    <!-- Game mode links will be inserted here -->
+    <!-- ACTIVE ONLY GAMES WILL BE HERE -->
   </div>
 
   <script>
@@ -36,17 +36,17 @@
       }
     }
 
-    // Display links only for active game modes
+    // DISPLAY ACTIVE GAMES
     function displayGameLinks(gameModes) {
       const linksDiv = document.getElementById('games-links');
-      linksDiv.innerHTML = ''; // Clear any previous content
+      linksDiv.innerHTML = ''; // Clear previous content
       
       gameModes.forEach(mode => {
         if (mode.active == 1) {
           let pageLink = '';
           let displayName = '';
           
-          // Map the game mode name to the appropriate page and display text
+          // MAPING THE GAME MODE
           switch (mode.quiz) {
             case 'quiz':
               pageLink = 'departmentquiz.html';
@@ -61,7 +61,6 @@
               displayName = 'True/False Quiz';
               break;
             default:
-              // If the mode is unrecognized, do nothing.
               break;
           }
           
@@ -75,13 +74,11 @@
       });
     }
 
-    // Initialize the game links by fetching the statuses and displaying active ones
     async function initGameLinks() {
       const gameModes = await fetchGameStatuses();
       displayGameLinks(gameModes);
     }
     
-    // When the page loads, initialize the links.
     initGameLinks();
   </script>
 </body>

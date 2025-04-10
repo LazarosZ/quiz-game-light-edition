@@ -3,12 +3,12 @@ const router = express.Router();
 
 // GET /api/imageQuiz
 router.get('/', (req, res) => {
-  // Ensure the user is logged in
+  // CHECK LOG IN STATUS
   if (!req.session.user) {
     return res.status(401).json({ error: 'Unauthorized: Please log in to access the quiz.' });
   }
   
-  // Use SQLite's RANDOM() to return the questions in random order
+  //RANDOMIZE QUESTIONS POSITION
   req.db.all('SELECT * FROM image_questions ORDER BY RANDOM()', [], (err, rows) => {
     if (err) {
       console.error("Error fetching image questions:", err);
@@ -19,7 +19,7 @@ router.get('/', (req, res) => {
 });
 
 router.post('/submit', async (req, res) => {
-    // Ensure the user is logged in
+    // LOGIN STATUS
     if (!req.session.user) {
       return res.status(401).json({ error: 'Unauthorized: Please log in to submit your quiz.' });
     }
@@ -55,7 +55,6 @@ router.post('/submit', async (req, res) => {
             const newImageAverage = newImageAverageValue ? Math.round(Number(newImageAverageValue)) : 0;
             
             // UPDATE AVERAGE WITH NEW VALUE
-            // This query retrieves the existing id (if any) for the user and replaces the row.
             req.db.run(
               `INSERT OR REPLACE INTO average (id, user_id, image_average, quiz_average, time_average)
                VALUES (

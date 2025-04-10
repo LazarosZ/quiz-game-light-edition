@@ -33,7 +33,7 @@
       </tr>
     </thead>
     <tbody id="total-scores-tbody">
-      <!-- Data will be inserted here -->
+      <!-- DATA FROM TOTAL-SCORES ENDPOINT -->
     </tbody>
   </table>
   <h2>Leaderboard</h2>
@@ -47,7 +47,7 @@
       </tr>
     </thead>
     <tbody id="leaderboard-tbody">
-      <!-- Data will be inserted here -->
+      <!-- DATA FROM LEADERBOARD ENDPOINT -->
     </tbody>
   </table>
   
@@ -61,7 +61,7 @@
       </tr>
     </thead>
     <tbody id="game-modes-tbody">
-      <!-- Game mode rows will be inserted here -->
+      <!-- ACTIVE OR INACTIVE, ADMIN TOGGLE -->
     </tbody>
   </table>
   <p>Enter a username to view their score records:</p>
@@ -82,7 +82,7 @@
       </tr>
     </thead>
     <tbody id="scores-tbody">
-      <!-- Score records will be inserted here -->
+      <!-- DATA FROM GET SCORES ENDPOINT -->
     </tbody>
   </table>
 
@@ -98,13 +98,13 @@
       </tr>
     </thead>
     <tbody id="all-users-tbody">
-      <!-- All users data will be inserted here -->
+      <!-- DATA FROM GET USERS ENDPOINT -->
     </tbody>
   </table>
   <h2>User Information</h2>
   <table id="user-info-table">
     <tbody id="user-info-body">
-      <!-- User info will be inserted here -->
+      <!-- DATA FROM USER INFO ENDPOINT -->
     </tbody>
   </table>
   <div id="rank-div"></div>
@@ -112,16 +112,16 @@
   <h2>User CSV Data</h2>
   <table id="csv-table">
     <thead id="csv-head">
-      <!-- CSV header row will be inserted here -->
+      <!-- CSV HEADER -->
     </thead>
     <tbody id="csv-body">
-      <!-- CSV rows will be inserted here -->
+      <!-- CSV LINES -->
     </tbody>
   </table>
 
 
   <script>
-    // Existing functionality for search and reset for individual user
+    // SEARCH BY USERNAME
     document.getElementById('search-btn').addEventListener('click', async () => {
       const username = document.getElementById('username').value.trim();
       if (!username) {
@@ -143,7 +143,7 @@
         alert('An error occurred while fetching scores.');
       }
     });
-    
+    // RESET SCORES FOR INDIVIDUAL USER
     document.getElementById('reset-btn').addEventListener('click', async () => {
       const username = document.getElementById('username').value.trim();
       if (!username) {
@@ -168,7 +168,7 @@
       }
     });
     
-    // New functionality: Reset All Scores
+    // RESET ALL SCORES!! DANGEROUS WATERS..
     document.getElementById('reset-all-btn').addEventListener('click', async () => {
       if (!confirm('Are you sure you want to reset all scores? This action cannot be undone.')) {
         return;
@@ -181,7 +181,6 @@
         });
         const result = await response.json();
         alert(result.message);
-        // Optionally, clear the displayed table
         document.getElementById('scores-tbody').innerHTML = '';
         document.getElementById('scores-table').style.display = 'none';
       } catch (error) {
@@ -193,7 +192,7 @@
     function displayScores(scores) {
       const table = document.getElementById('scores-table');
       const tbody = document.getElementById('scores-tbody');
-      tbody.innerHTML = ''; // Clear previous results
+      tbody.innerHTML = '';
       
       if (scores.length === 0) {
         tbody.innerHTML = '<tr><td colspan="6">No score records found for this user.</td></tr>';
@@ -229,7 +228,7 @@
       }
     }
 
-    // Display game modes in a table with a toggle button
+    // DISPLAY GAME MODES ACTIVE-INACTIVE
     function displayGameModes(gameModes) {
       const tbody = document.getElementById("game-modes-tbody");
       tbody.innerHTML = "";
@@ -248,7 +247,7 @@
       });
     }
 
-    // Toggle the active status for a given game mode
+    // TOGGLE GAME STATUS--> ACTIVE OR NOT
     async function toggleGameMode(quiz, currentStatus) {
       const newStatus = currentStatus == 1 ? 0 : 1;
       try {
@@ -260,7 +259,6 @@
         });
         const result = await response.json();
         alert(result.message);
-        // Refresh the game modes list after update
         fetchGameModes();
       } catch (error) {
         console.error("Error toggling game mode:", error);
@@ -268,7 +266,6 @@
       }
     }
 
-    // Fetch game modes when the page loads
     fetchGameModes();
 
     async function fetchAllUserAverages() {
@@ -316,9 +313,8 @@
           return;
         }
         const userInfo = await response.json();
-        // Display the user information. For simplicity, we use alert.
         displayUserInfo(userInfo);
-        // Also fetch the CSV for this user.
+        // GET CSV FOR USER
         fetchUserCSV(userInfo.username);
       } catch (error) {
         console.error('Error fetching user info:', error);
@@ -366,7 +362,6 @@
       `;
     }
     
-    // Initialize the dashboard by fetching all user averages.
     fetchAllUserAverages();
 
     async function fetchTotalScores() {
@@ -410,7 +405,7 @@
       });
     }
   }
-    // Fetch CSV data for the user.
+    // GET CSV FUNCTION
     async function fetchUserCSV(username) {
       try {
         const response = await fetch(`/api/admin/usercsv?username=${encodeURIComponent(username)}`, { credentials: 'include' });
@@ -427,13 +422,13 @@
       }
     }
     
-    // Display CSV data in the CSV table.
+    // SHOW CSV IN TABLE
     function displayCSV(data) {
       const head = document.getElementById('csv-head');
       const body = document.getElementById('csv-body');
-      // Create header row.
+      // Create HEADER
       head.innerHTML = `<tr>${data.headers.map(header => `<th>${header}</th>`).join('')}</tr>`;
-      // Create rows for CSV data.
+      // Create LINES
       body.innerHTML = data.rows.map(row => `<tr>${row.map(cell => `<td>${cell}</td>`).join('')}</tr>`).join('');
     }
 
@@ -471,7 +466,6 @@
       });
     }
   }
-  // Call fetchTotalScores() when the page loads.
   fetchTotalScores();
   fetchLeaderboard();
   </script>

@@ -20,15 +20,12 @@ const departmentTables = {
   ]
 };
 
-/**
- * GET /api/departmentquiz
- * Returns a department-specific quiz based on the user's department.
- */
-
-
+ //GET /api/departmentquiz
+ //Returns a department-specific quiz based on the user's department.
+ 
 ////////////////////////////////////////// NO SUBMIT ENDPOINT HERE, SEE quizRoutes.js !!!!!!!!!!!!
 router.get('/', (req, res) => {
-  // Ensure the user is logged in
+  // CHECK USER IS LOGED IN
   if (!req.session.user || !req.session.user.department) {
     return res.status(401).json({ error: 'Unauthorized: Please log in to get a quiz' });
   }
@@ -68,7 +65,6 @@ router.get('/', (req, res) => {
   
   Promise.all(promises)
     .then(resultsArrays => {
-      // Flatten the array of arrays
       const allQuestions = [].concat(...resultsArrays);
       const shuffledQuestions = shuffleArray(allQuestions);
     res.json(shuffledQuestions);
