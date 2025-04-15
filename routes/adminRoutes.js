@@ -110,6 +110,7 @@ router.get('/all-scores', (req, res) => {
       IFNULL(a.image_average, 0) AS image_quiz_average
     FROM users u
     LEFT JOIN average a ON u.id = a.user_id
+    WHERE u.role <> 'admin'
     ORDER BY u.username ASC
   `;
 
@@ -154,7 +155,7 @@ router.get('/total-scores', (req, res) => {
   if (!req.session.user || req.session.user.role !== 'admin') {
     return res.status(401).json({ error: 'Unauthorized: Only admins can access total scores.' });
   }
-
+// TO EXCLUDE ADMIN ADD THIS------>  WHERE u.role <> 'admin'    <------------
   const query = `
     SELECT 
       u.id AS user_id,
@@ -171,6 +172,7 @@ router.get('/total-scores', (req, res) => {
       COALESCE(AVG(s.image_quiz_score), 0) AS avg_image_quiz_score
     FROM users u
     LEFT JOIN scores s ON u.id = s.user_id
+    WHERE u.role <> 'admin'
     GROUP BY u.id, u.username, u.department
     ORDER BY u.username;
   `;
@@ -207,6 +209,7 @@ FROM (
     COALESCE(SUM(s.image_quiz_score), 0) AS total_image_quiz_score
   FROM users u
   LEFT JOIN scores s ON u.id = s.user_id
+  WHERE u.role <> 'admin'
   GROUP BY u.id, u.firstName, u.lastName, u.department
 ) AS aggregated
 ORDER BY overall_total DESC;
