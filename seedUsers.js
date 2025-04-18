@@ -14,12 +14,12 @@ const db = new sqlite3.Database(dbPath, (err) => {
 
 // ARRAY OF USERS 
 const users = [
-  { username: 'tasos', password: 'tasos123', firstName: 'Anastasios', lastName: 'Kosmidis', email: 'tasos@bugabused.com', department: 'warehouse' },
-  { username: 'chara', password: 'chara123', firstName: 'Charikleia', lastName: 'Niouraki', email: 'chara@bugabused.com', department: 'accounting' },
-  { username: 'lazos', password: 'laz123', firstName: 'Lazaros', lastName: 'Zinonidis', email: 'lazos@bugabused.com',department: 'warehouse' },
-  { username: 'thanos', password: 'thanos123', firstName: 'Athanasios', lastName: 'Katsikis', email: 'thanos@bugabused.com',department: 'accounting' },
-  { username: 'alkis', password: 'alkis123', firstName: 'Alkiviadis', lastName: 'Van der Spoel', email: 'alkis@bugabused.com',department: 'warehouse' },
-  { username: 'admin', password: 'admin123', firstName: 'Robert', lastName: 'Sapolsky', email: 'admin@bugabused.com',department: 'admin', role: 'admin' }
+  { username: 'tasos', password: 'tasos1_aA!', firstName: 'Anastasios', lastName: 'Kosmidis', email: 'tasos@bugabused.com', department: 'warehouse' },
+  { username: 'chara', password: 'chara1_aA!', firstName: 'Charikleia', lastName: 'Niouraki', email: 'chara@bugabused.com', department: 'accounting' },
+  { username: 'lazos', password: 'lazos1_aA!', firstName: 'Lazaros', lastName: 'Zinonidis', email: 'lazos@bugabused.com',department: 'warehouse' },
+  { username: 'thanos', password: 'thanos1_aA!', firstName: 'Athanasios', lastName: 'Katsikis', email: 'thanos@bugabused.com',department: 'accounting' },
+  { username: 'alkis', password: 'alkis1_aA!', firstName: 'Alkiviadis', lastName: 'Van der Spoel', email: 'alkis@bugabused.com',department: 'warehouse' },
+  { username: 'admin', password: 'admin1_aA!', firstName: 'Robert', lastName: 'Sapolsky', email: 'admin@bugabused.com',department: 'admin', role: 'admin' }
 ];
 
 // "function" TO INSERT USERS WITH "PRE"HASHED PASSWORDS
@@ -48,8 +48,58 @@ db.serialize(() => {
   
   // IMPORTANT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   // THE IMAGES FOLDER IS IN THE ROOT FOLDER, WITH THE index.js, ANY CHANGES TO STRUCTURE WILL "BREAK" THE URLs, example: /images/manual_handling/1w.jpg ....
+  
+  // fake scores for testing and demonstration
+  const sampleScores = [
+    // user 1
+    { userId: 1, quiz: 20, time: 20, image: 5, dur: 120 },
+    { userId: 1, quiz: 25, time: 25, image: 7, dur: 95 },
+    { userId: 1, quiz: 22, time: 22, image: 6, dur: 110 },
+    // user 2
+    { userId: 2, quiz: 8,  time: 18, image: 4, dur: 130 },
+    { userId: 2, quiz: 18, time: 24, image: 9, dur: 100 },
+    { userId: 2, quiz: 24, time: 20, image: 6, dur: 115 },
+    // user 3
+    { userId: 3, quiz: 20, time: 30, image: 10, dur: 80 },
+    { userId: 3, quiz: 25, time: 28, image: 9,  dur: 85 },
+    { userId: 3, quiz: 29, time: 29, image: 8,  dur: 90 },
+    // user 4
+    { userId: 4, quiz: 17,  time: 10, image: 2,  dur: 150 },
+    { userId: 4, quiz: 17,  time: 12, image: 3,  dur: 140 },
+    { userId: 4, quiz: 19,  time: 11, image: 4,  dur: 145 },
+    // user 5
+    { userId: 6, quiz: 30, time: 23, image: 6,  dur: 105 },
+    { userId: 6, quiz: 28, time: 21, image: 7,  dur: 112 },
+    { userId: 6, quiz: 21, time: 25, image: 8,  dur:  98 },
+  ];
 
+  // insert fake scores in scores table
+  const insertScore = db.prepare(`
+    INSERT INTO scores
+      (user_id, quiz_score, time_attack_score, image_quiz_score, quiz_duration)
+    VALUES (?, ?, ?, ?, ?)
+  `);
+  sampleScores.forEach(s => {
+    insertScore.run(
+      s.userId, s.quiz, s.time, s.image, s.dur
+    );
+  });
+  insertScore.finalize();
 
+  // calculate and insert averages
+  for (let userId = 1; userId <= 5; userId++) {
+    const userRows = sampleScores.filter(s => s.userId === userId);
+    const quizAvg  = Math.floor(userRows.reduce((sum,r) => sum + r.quiz, 0)  / userRows.length);
+    const timeAvg  = Math.floor(userRows.reduce((sum,r) => sum + r.time, 0)  / userRows.length);
+    const imageAvg = Math.floor(userRows.reduce((sum,r) => sum + r.image, 0) / userRows.length);
+
+    db.run(
+      `INSERT OR REPLACE INTO average
+         (user_id, quiz_average, time_average, image_average)
+       VALUES (?, ?, ?, ?)`,
+      [userId, quizAvg, timeAvg, imageAvg]
+    );
+  }
 
   // INSERT into IMAGE questions
   db.run(`

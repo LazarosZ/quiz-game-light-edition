@@ -79,6 +79,11 @@ router.post('/submit', async (req, res) => {
   }
   
   const userId = req.session.user.id;
+  const start = req.session.quizStart;
+  const durationMs = start ? Date.now() - start : null;
+  const durationS = Math.round(durationMs / 1000);
+  delete req.session.quizStart;
+
   const { answers } = req.body;
   if (!answers || !Array.isArray(answers)) {
     return res.status(400).json({ error: 'Invalid answers array; must provide 20 answers' });
@@ -116,8 +121,8 @@ router.post('/submit', async (req, res) => {
     
     // INSERT QUIZ SCORE
     req.db.run(
-      'INSERT INTO scores (user_id, quiz_score) VALUES (?, ?)',
-      [userId, score],
+      'INSERT INTO scores (user_id, quiz_score, quiz_duration) VALUES (?, ?, ?)',
+      [userId, score, durationS],
       function(err) {
         if (err) {
           console.error('Error inserting score:', err);

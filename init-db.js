@@ -35,6 +35,7 @@ db.serialize(() => {
       time_attack_score INTEGER,
       image_quiz_score INTEGER,
       timestamp DATETIME DEFAULT (datetime('now')),
+      quiz_duration INTEGER,
       FOREIGN KEY (user_id) REFERENCES users(id)
     )
   `);

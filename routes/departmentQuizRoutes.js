@@ -30,6 +30,8 @@ router.get('/', (req, res) => {
     return res.status(401).json({ error: 'Unauthorized: Please log in to get a quiz' });
   }
   
+  req.session.quizStart = Date.now(); // GET THE TIME FOR SURATION
+
   const department = req.session.user.department.toLowerCase();
   const tables = departmentTables[department];
   

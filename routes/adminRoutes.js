@@ -1,9 +1,12 @@
 // routes/adminRoutes.js
 const express = require('express');
+const fs      = require('fs');
+const path    = require('path');
 const router = express.Router();
 
  //GET /api/admin/scores?username=<username>
- //Returns the score records for the user with the given username. CURRENTLY NOT USED
+ //Returns the score records for the user with the given username. 
+ // ###################################################################    IMPORTANT, REACTIVATED ENDPOINT, WITH DURATION FIELD ADDED, AS REQUESTED FROM CLIENT
  
 router.get('/scores', (req, res) => {
   const username = req.query.username;
@@ -12,7 +15,7 @@ router.get('/scores', (req, res) => {
   }
   
   const query = `
-    SELECT u.username, u.department, s.quiz_score, s.time_attack_score, s.image_quiz_score, s.timestamp
+    SELECT u.username, u.department, s.quiz_score, s.time_attack_score, s.image_quiz_score, s.timestamp, s.quiz_duration
     FROM users u
     JOIN scores s ON u.id = s.user_id
     WHERE u.username = ?
@@ -29,7 +32,13 @@ router.get('/scores', (req, res) => {
 });
 
 // DELETE reset scores for specific user, selected through search-bar
-router.delete('/scores/reset', (req, res) => {
+router.delete('/scores/reset/:role', (req, res) => {
+  //ADMIN CHECK
+  const userRole = req.params.role;
+  if (!userRole || userRole !== 'admin') {
+    return res.status(401).json({ error: 'Something went Wrong, please try again.' });
+  }
+  
   const username = req.query.username;
   if (!username) {
     return res.status(400).json({ error: 'Username is required to reset scores' });
@@ -68,10 +77,11 @@ router.delete('/scores/reset', (req, res) => {
 });
 
 // RESET ALL SCORES
-router.delete('/scores/reset-all', (req, res) => {
+router.delete('/scores/reset-all/:role', (req, res) => {
   // ADMIN VALIDATION
-  if (!req.session.user || req.session.user.role !== 'admin') {
-    return res.status(401).json({ error: 'Unauthorized: Only admins can reset all scores.' });
+  const userRole = req.params.role;
+  if (!userRole || userRole !== 'admin') {
+    return res.status(401).json({ error: 'Something went Wrong, please try again.' });
   }
 
   // DELETE ALL SCORES FROM SCORES TABLE
@@ -97,7 +107,7 @@ router.delete('/scores/reset-all', (req, res) => {
 router.get('/all-scores', (req, res) => {
   // ADMIN VALIDATION
   if (!req.session.user || req.session.user.role !== 'admin') {
-    return res.status(401).json({ error: 'Unauthorized: Only admin can access this endpoint.' });
+    return res.status(401).json({ error: 'Something went Wrong, please try again.' });
   }
 
   const query = `
@@ -128,7 +138,7 @@ router.get('/all-scores', (req, res) => {
 router.get('/userinfo', (req, res) => {
   // ADMIN VALIDATION
   if (!req.session.user || req.session.user.role !== 'admin') {
-    return res.status(401).json({ error: 'Unauthorized: Only admin can access user info.' });
+    return res.status(401).json({ error: 'Something went Wrong, please try again.' });
   }
 
   const userId = req.query.userId;
@@ -150,11 +160,13 @@ router.get('/userinfo', (req, res) => {
 });
 // GET --> username, first & last Name, email, department, total-score & AVG
 // GET SUM OF ALL SCORES, (TO BE DISPLAYED NEXT TO AVERAGE FOR REFERENCE)
-router.get('/total-scores', (req, res) => {
+router.get('/total-scores/:role', (req, res) => {
   // ADMIN CHECK
-  if (!req.session.user || req.session.user.role !== 'admin') {
-    return res.status(401).json({ error: 'Unauthorized: Only admins can access total scores.' });
+  const userRole = req.params.role;
+  if (!userRole || userRole !== 'admin') {
+    return res.status(401).json({ error: 'Something went Wrong, please try again.' });
   }
+
 // TO EXCLUDE ADMIN ADD THIS------>  WHERE u.role <> 'admin'    <------------
   const query = `
     SELECT 
@@ -223,5 +235,91 @@ ORDER BY overall_total DESC;
     res.json(rows);
   });
 });
+
+// GET /api/admin/usercsv?username=<username>
+// Returns the contents of <username>.csv as JSON array of objects
+router.get('/usercsv/:role', (req, res) => {
+  // admin check
+  const userRole = req.params.role;
+  if (!userRole || userRole !== 'admin') {
+    return res.status(401).json({ error: 'Something went Wrong, please try again.' });
+  }
+
+  const username = req.query.username;
+  if (!username) {
+    return res.status(400).json({ error: 'Missing username query parameter.' });
+  }
+
+  const filePath = path.join(__dirname, '..', 'csv', `${username}.csv`);
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ error: `CSV for user "${username}" not found.` });
+  }
+
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) {
+      console.error('Error reading CSV file:', err);
+      return res.status(500).json({ error: 'Error reading CSV file.', details: err });
+    }
+
+    // split into lines and trim
+    const lines = data.trim().split(/\r?\n/);
+    if (lines.length < 2) {
+      return res.json([]);
+    }
+
+    // parse header row into field names
+    const headers = parseCSVLine(lines[0]);
+
+    // parse each subsequent line and build row objects
+    const rows = lines.slice(1).map(line => {
+      const values = parseCSVLine(line);
+      const obj = {};
+      headers.forEach((h, i) => {
+        obj[h] = values[i] ?? '';
+      });
+      return obj;
+    });
+
+    res.json(rows);
+  });
+});
+
+// csv line Parser
+function parseCSVLine(line) {
+  const result = [];
+  let cur = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+
+    if (inQuotes) {
+      if (ch === '"') {
+        // double-quote escape
+        if (line[i + 1] === '"') {
+          cur += '"';
+          i++;
+        } else {
+          inQuotes = false;
+        }
+      } else {
+        cur += ch;
+      }
+    } else {
+      if (ch === '"') {
+        inQuotes = true;
+      } else if (ch === ',') {
+        result.push(cur);
+        cur = '';
+      } else {
+        cur += ch;
+      }
+    }
+  }
+  result.push(cur);
+  return result;
+}
+
+
 
 module.exports = router;
