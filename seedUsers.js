@@ -50,6 +50,9 @@ db.serialize(() => {
   // THE IMAGES FOLDER IS IN THE ROOT FOLDER, WITH THE index.js, ANY CHANGES TO STRUCTURE WILL "BREAK" THE URLs, example: /images/manual_handling/1w.jpg ....
   
   // fake scores for testing and demonstration
+  // I HAVE TO ADD SCORES FOR THE 6th USER (ADMIN) INCONSISTENCY WHEN POPULATING USERS TABLE
+  // ON USER.ID, ADMIN NOT ALWAYS ON SAME ID NUMBER
+  // SIMPLER FIX THAN CHANGING THE USERS TABLE AYTOINCREMENT AND ADDING ID NUMBERS TO THE INSERT FUNCTION 
   const sampleScores = [
     // user 1
     { userId: 1, quiz: 20, time: 20, image: 5, dur: 120 },
@@ -68,6 +71,10 @@ db.serialize(() => {
     { userId: 4, quiz: 17,  time: 12, image: 3,  dur: 140 },
     { userId: 4, quiz: 19,  time: 11, image: 4,  dur: 145 },
     // user 5
+    { userId: 5, quiz: 30, time: 23, image: 6,  dur: 105 },
+    { userId: 5, quiz: 28, time: 21, image: 7,  dur: 112 },
+    { userId: 5, quiz: 21, time: 25, image: 8,  dur:  98 },
+    // user 6
     { userId: 6, quiz: 30, time: 23, image: 6,  dur: 105 },
     { userId: 6, quiz: 28, time: 21, image: 7,  dur: 112 },
     { userId: 6, quiz: 21, time: 25, image: 8,  dur:  98 },
