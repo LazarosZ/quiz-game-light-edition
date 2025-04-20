@@ -30,7 +30,7 @@
     // GET QUESTIONS FROM DEPARTMENT-QUIZ ENDPOINT
     async function fetchQuizQuestions() {
       try {
-        const response = await fetch('/api/departmentquiz', { credentials: 'include' });
+        const response = await fetch(`/api/departmentquiz/${department}`, { credentials: 'include' });
         const data = await response.json();
         console.log("Fetched quiz questions:", data);
         if (!Array.isArray(data) || data.length === 0) {

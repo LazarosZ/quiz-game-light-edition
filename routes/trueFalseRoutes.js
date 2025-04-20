@@ -3,9 +3,10 @@ const express = require('express');
 const router = express.Router();
 
 // GET /api/timeattack/truefalse
-router.get('/', (req, res) => {
+router.get('/:department', (req, res) => {
   // LOGIN STATUS
-  if (!req.session.user) {
+  const department = req.params.department;
+  if (!department) {
     return res.status(401).json({ error: 'Unauthorized: Please log in to access true/false questions.' });
   }
   

@@ -24,15 +24,16 @@ const departmentTables = {
  //Returns a department-specific quiz based on the user's department.
  
 ////////////////////////////////////////// NO SUBMIT ENDPOINT HERE, SEE quizRoutes.js !!!!!!!!!!!!
-router.get('/', (req, res) => {
+router.get('/:department', (req, res) => {
   // CHECK USER IS LOGED IN
-  if (!req.session.user || !req.session.user.department) {
+  const department = req.params.department;
+  if (!department) {
     return res.status(401).json({ error: 'Unauthorized: Please log in to get a quiz' });
   }
   
   req.session.quizStart = Date.now(); // GET THE TIME FOR SURATION
 
-  const department = req.session.user.department.toLowerCase();
+  //const department = req.session.user.department.toLowerCase();
   const tables = departmentTables[department];
   
   if (!tables) {

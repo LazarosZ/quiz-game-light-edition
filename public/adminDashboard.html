@@ -251,7 +251,7 @@
     async function toggleGameMode(quiz, currentStatus) {
       const newStatus = currentStatus == 1 ? 0 : 1;
       try {
-        const response = await fetch(`/api/game_status/${quiz}`, {
+        const response = await fetch(`/api/game_status/${quiz}/${role}`, {
           method: 'PUT',
           headers: { "Content-Type": "application/json" },
           credentials: 'include',

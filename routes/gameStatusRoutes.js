@@ -14,16 +14,17 @@ router.get('/', (req, res) => {
   });
 });
 
-// PUT /api/game_status/:quiz
+// PUT /api/game_status/:quiz/:role
 // Updates the active status for a given game mode.
 // 1-->ACTIVE 0-->NOT
-router.put('/:quiz', (req, res) => {
+router.put('/:quiz/:role', (req, res) => {
   // Check ADMIN STATUS
-  if (!req.session.user || req.session.user.role !== 'admin') {
-    return res.status(401).json({ error: 'Unauthorized: Only admin can update game statuses' });
+  const { quiz,role } = req.params;
+  if (!role || role !== 'admin') {
+    return res.status(401).json({ error: 'Something went Wrong! Please try Again. ' });
   }
   
-  const quiz = req.params.quiz;
+  //const quiz = req.params.quiz;
   const { active } = req.body;
   
   // CHECK IF ACTIVE
