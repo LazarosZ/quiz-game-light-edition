@@ -51,11 +51,11 @@ const csvRoutes = require('./routes/csvRoutes');
 const userProfileRoutes = require('./routes/userProfileRoutes')
 
 const cors = require('cors');
-//app.use(cors()); // Allows all origins
-app.use(cors({
-  origin: 'http://localhost:8080', // your front end
-  credentials: true
-}));
+app.use(cors()); // Allows all origins
+//app.use(cors({
+  //origin: 'http://localhost:8080', // your front end
+  //credentials: true
+//}));
 
 app.use('/api/auth', authRoutes);
 //app.use('/api/questions', questionRoutes); //TESTING REMAININGS, TO BE CLEANED UP
