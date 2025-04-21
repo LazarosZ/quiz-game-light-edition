@@ -72,7 +72,7 @@ router.get('/', (req, res) => {
 
 // SUBMIT ENDPOINT USED FROM DEPARTMENTQUIZROUTES
 // CREATION OF CSV
-router.post('/submit/:role', async (req, res) => {
+router.post('/submit/:role/:id/:quizStart/:username', async (req, res) => {
   // LOGIN STATUS
   const role = req.params.role;
   if (!role) {
@@ -156,7 +156,7 @@ router.post('/submit/:role', async (req, res) => {
                 }
                 
                 // CSV Saving Logic:
-                const username = req.session.user.username;
+                const username = req.params.username;
                 const csvDir = path.join(__dirname, '..', 'csv');
                 fs.mkdirSync(csvDir, { recursive: true });
                 const filePath = path.join(csvDir, `${username}.csv`);
