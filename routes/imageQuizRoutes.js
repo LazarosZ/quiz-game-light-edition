@@ -19,13 +19,14 @@ router.get('/:department', (req, res) => {
   });
 });
 
-router.post('/submit', async (req, res) => {
+router.post('/submit/', async (req, res) => {
     // LOGIN STATUS
-    if (!req.session.user) {
-      return res.status(401).json({ error: 'Unauthorized: Please log in to submit your quiz.' });
-    }
+    //const role = req.params.role;
+  //if (!role) {
+    //return res.status(401).json({ error: 'Unauthorized: Please log in to get a quiz' });
+  //}
     
-    const userId = req.session.user.id;
+    const userId = req.params.id;
     const { score } = req.body;  // SCORE HERE IS IMAGE-QUIZ-SCORE
     
     if (typeof score !== 'number') {

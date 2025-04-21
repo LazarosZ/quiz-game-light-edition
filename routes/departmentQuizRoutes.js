@@ -31,7 +31,8 @@ router.get('/:department', (req, res) => {
     return res.status(401).json({ error: 'Unauthorized: Please log in to get a quiz' });
   }
   
-  req.session.quizStart = Date.now(); // GET THE TIME FOR SURATION
+  const quizStart = Date.now();
+  req.session.quizStart = quizStart; // GET THE TIME FOR SURATION
 
   //const department = req.session.user.department.toLowerCase();
   const tables = departmentTables[department];
@@ -70,7 +71,8 @@ router.get('/:department', (req, res) => {
     .then(resultsArrays => {
       const allQuestions = [].concat(...resultsArrays);
       const shuffledQuestions = shuffleArray(allQuestions);
-    res.json(shuffledQuestions);
+    res.json({shuffledQuestions, quizStart});
+    
     })
     .catch(err => {
       console.error('Error fetching department quiz questions:', err);

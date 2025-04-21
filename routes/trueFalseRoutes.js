@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 
 // GET /api/timeattack/truefalse
-router.get('/:department', (req, res) => {
+router.get('/', (req, res) => {
   // LOGIN STATUS
   const department = req.params.department;
   if (!department) {
@@ -22,11 +22,12 @@ router.get('/:department', (req, res) => {
 
 router.post('/submit', (req, res) => {
     // LOGIN STATUS+SESSION
-    if (!req.session.user) {
-      return res.status(401).json({ error: 'Unauthorized: Please log in to submit your score.' });
-    }
+    //if (!req.session.user) {
+      //return res.status(401).json({ error: 'Unauthorized: Please log in to submit your score.' });
+    //}
     
-    const userId = req.session.user.id;
+    //const userId = req.session.user.id;
+    const userId = req.params.id;
     const { score } = req.body;
     
     if (typeof score !== 'number') {

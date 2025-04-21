@@ -72,17 +72,18 @@ router.get('/', (req, res) => {
 
 // SUBMIT ENDPOINT USED FROM DEPARTMENTQUIZROUTES
 // CREATION OF CSV
-router.post('/submit', async (req, res) => {
+router.post('/submit/:role', async (req, res) => {
   // LOGIN STATUS
-  if (!req.session.user) {
-    return res.status(401).json({ error: 'Unauthorized: Please log in to submit the quiz.' });
+  const role = req.params.role;
+  if (!role) {
+    return res.status(401).json({ error: 'Unauthorized: Please log in to get a quiz' });
   }
-  
-  const userId = req.session.user.id;
-  const start = req.session.quizStart;
+
+  const userId = req.params.id;
+  const start = req.params.quizStart;
   const durationMs = start ? Date.now() - start : null;
   const durationS = Math.round(durationMs / 1000);
-  delete req.session.quizStart;
+  //delete req.session.quizStart;
 
   const { answers } = req.body;
   if (!answers || !Array.isArray(answers)) {
