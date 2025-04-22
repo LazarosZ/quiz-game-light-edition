@@ -8,6 +8,9 @@ router.get('/:department', (req, res) => {
   if (!department) {
     return res.status(401).json({ error: 'Unauthorized: Please log in to access the quiz.' });
   }
+
+  const quizStart = Date.now();
+  req.session.quizStart = quizStart; // GET THE TIME FOR SURATION
   
   //RANDOMIZE QUESTIONS POSITION
   req.db.all('SELECT * FROM image_questions ORDER BY RANDOM()', [], (err, rows) => {
@@ -15,7 +18,7 @@ router.get('/:department', (req, res) => {
       console.error("Error fetching image questions:", err);
       return res.status(500).json({ error: 'Database error fetching questions' });
     }
-    res.json(rows);
+    res.json({rows, quizStart});
   });
 });
 
@@ -27,6 +30,9 @@ router.post('/submit/', async (req, res) => {
   //}
     
     const userId = req.params.id;
+    const start = req.params.quizStart;
+    const durationMs = start ? Date.now() - start : null;
+    const durationS = Math.round(durationMs / 1000);
     const { score } = req.body;  // SCORE HERE IS IMAGE-QUIZ-SCORE
     
     if (typeof score !== 'number') {
@@ -35,8 +41,8 @@ router.post('/submit/', async (req, res) => {
     
     // INSERT IMAGE-QUIZ-SCORE IN SCORES TABLE
     req.db.run(
-      'INSERT INTO scores (user_id, image_quiz_score) VALUES (?, ?)',
-      [userId, score],
+      'INSERT INTO scores (user_id, image_quiz_score, quiz_duration) VALUES (?, ?, ?)',
+      [userId, score, durationS],
       function(err) {
         if (err) {
           console.error('Error inserting score:', err);
