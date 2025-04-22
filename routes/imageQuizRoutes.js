@@ -22,7 +22,7 @@ router.get('/:department', (req, res) => {
   });
 });
 
-router.post('/submit/', async (req, res) => {
+router.post('/submit/:id/:quizStart', async (req, res) => {
     // LOGIN STATUS
     //const role = req.params.role;
   //if (!role) {
