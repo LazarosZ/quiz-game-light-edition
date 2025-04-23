@@ -21,130 +21,116 @@
   <script>
     let questions = [];
     let currentQuestionIndex = 0;
-    let remainingTime = 30; // INITIAL TIME, TO BE DISCUSSED, TEAM DECIDES
+    let remainingTime = 30;
     let timerInterval;
     let gameStartTime;
-    let finalScore = 0; // will store final duration in seconds
+    let finalScore = 0;
 
-    // GET QUESTIONS TIMEATTACK ENDPOINT
+    // Grab department and userId from localStorage (set these at login)
+    const department = localStorage.getItem('department');
+    const userId     = localStorage.getItem('userId');
+
+    if (!department || !userId) {
+      alert('Missing department or userId. Please log in again.');
+      throw new Error('Missing credentials');
+    }
+
     async function fetchQuestions() {
       try {
-        const response = await fetch('/api/timeattack/truefalse', { credentials: 'include' });
+        // include your department in the path
+        const response = await fetch(`/api/timeattack/truefalse/${department}`, {
+          credentials: 'include'
+        });
+        if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.error || 'Failed to fetch questions');
+        }
         const data = await response.json();
         console.log("Fetched questions:", data);
         if (!Array.isArray(data) || data.length === 0) {
           alert("No questions available. Please try again later.");
           return;
         }
-        // STORE RANDOMLY FETCHED QUESTIONS
-        questions = data;
-        // RECORD STARTING TIME
-        gameStartTime = Date.now();
-        // SHOW QUESTION AND RUN TIME
+        questions      = data;
+        gameStartTime  = Date.now();
         displayQuestion();
         startTimer();
       } catch (error) {
         console.error("Error fetching questions:", error);
+        alert(error.message);
       }
     }
 
-    // Start the countdown timer
     function startTimer() {
       document.getElementById('time-left').textContent = remainingTime;
       timerInterval = setInterval(() => {
         remainingTime--;
         document.getElementById('time-left').textContent = remainingTime;
-        if (remainingTime <= 0) {
-          endGame();
-        }
+        if (remainingTime <= 0) endGame();
       }, 1000);
     }
 
-    // Display the current question
     function displayQuestion() {
-      // End game if no more questions
       if (currentQuestionIndex >= questions.length) {
         endGame();
         return;
       }
       const container = document.getElementById('question-container');
-      container.innerHTML = ""; // Clear previous content
+      container.innerHTML = '';
 
-      const question = questions[currentQuestionIndex];
-      // Build a unique group name using the question's category and id
-      const groupName = `question_${question.category}_${question.id}`;
-      
-      // Display the question text
-      container.innerHTML = `<p><strong>Question ${currentQuestionIndex + 1}:</strong> ${question.question}</p>`;
-      
-      // Create "Yes" and "No" buttons as options
-      const yesBtn = document.createElement('button');
-      yesBtn.textContent = "Yes";
-      yesBtn.className = "option";
-      yesBtn.onclick = () => handleAnswer("yes", question.correct);
+      const { id, question, correct, category } = questions[currentQuestionIndex];
+      container.innerHTML = `<p><strong>Q${currentQuestionIndex + 1}:</strong> ${question}</p>`;
 
-      const noBtn = document.createElement('button');
-      noBtn.textContent = "No";
-      noBtn.className = "option";
-      noBtn.onclick = () => handleAnswer("no", question.correct);
+      ['yes','no'].forEach(answer => {
+        const btn = document.createElement('button');
+        btn.textContent = answer.charAt(0).toUpperCase() + answer.slice(1);
+        btn.className   = 'option';
+        btn.onclick     = () => handleAnswer(answer, correct);
+        container.appendChild(btn);
+      });
 
-      container.appendChild(yesBtn);
-      container.appendChild(noBtn);
-
-      // Clear previous feedback
-      document.getElementById('feedback').textContent = "";
+      document.getElementById('feedback').textContent = '';
     }
 
-    // Handle selected answer and immediate feedback
     function handleAnswer(selected, correctAnswer) {
-      // Disable the option buttons to prevent multiple selections
-      const options = document.querySelectorAll("button.option");
-      options.forEach(btn => btn.disabled = true);
-      
-      const feedbackDiv = document.getElementById('feedback');
-      if (selected.toLowerCase() === correctAnswer.toLowerCase()) {
-        feedbackDiv.textContent = "Correct!";
-        // Add bonus seconds for correct answer
-        remainingTime += 3;// TEAM DECIDES 
+      document.querySelectorAll('button.option').forEach(b=>b.disabled=true);
+      const feedback = document.getElementById('feedback');
+      if (selected === correctAnswer.toLowerCase()) {
+        feedback.textContent = 'Correct!';
+        remainingTime += 3;
         document.getElementById('time-left').textContent = remainingTime;
       } else {
-        feedbackDiv.textContent = "Incorrect!";
+        feedback.textContent = 'Incorrect!';
       }
-      
-      // Move to the next question after a short delay (e.g., 1 second)// TEAM DECIDES
       setTimeout(() => {
         currentQuestionIndex++;
         displayQuestion();
       }, 1000);
     }
 
-    // End the game, compute final score, and submit it
     function endGame() {
       clearInterval(timerInterval);
-      // Compute the final score as the duration of the game in seconds// TEAM DECIDES
       finalScore = Math.floor((Date.now() - gameStartTime) / 1000);
       alert(`Game over! Your final score is: ${finalScore} seconds.`);
-      
-      // SUBMIT ENDPOINT OF TRUEFALSE 
-      fetch('/api/timeattack/truefalse/submit', {
+
+      // send to your submit/:id endpoint
+      fetch(`/api/timeattack/truefalse/submit/${userId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({ score: finalScore })
       })
-      .then(response => response.json())
+      .then(r => r.json())
       .then(data => {
         console.log("Score submitted:", data);
-        // Redirect to the dashboard after submission
-        window.location.href = "dashboard.html";
+        window.location.href = 'dashboard.html';
       })
-      .catch(error => {
-        console.error("Error submitting score:", error);
-        window.location.href = "dashboard.html";
+      .catch(err => {
+        console.error("Error submitting score:", err);
+        window.location.href = 'dashboard.html';
       });
     }
 
-    // Start the game by fetching questions when the page loads
     fetchQuestions();
   </script>
 </body>
