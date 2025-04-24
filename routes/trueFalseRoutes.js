@@ -9,6 +9,9 @@ router.get('/:department', (req, res) => {
   if (!department) {
     return res.status(401).json({ error: 'Unauthorized: Please log in to access true/false questions.' });
   }
+
+  const quizStart = Date.now();
+  req.session.quizStart = quizStart; // GET THE TIME FOR SURATION
   
   // RANDOMIZE QUESTIONS ON SELECT
   req.db.all('SELECT * FROM time_attack_questions ORDER BY RANDOM()', (err, results) => {
@@ -16,11 +19,11 @@ router.get('/:department', (req, res) => {
       console.error('Error fetching true/false questions:', err);
       return res.status(500).json({ error: 'Database error fetching questions' });
     }
-    res.json(results);
+    res.json({results, quizStart});
   });
 });
 
-router.post('/submit/:id', (req, res) => {
+router.post('/submit/:id/:quizStart', (req, res) => {
     // LOGIN STATUS+SESSION
     //if (!req.session.user) {
       //return res.status(401).json({ error: 'Unauthorized: Please log in to submit your score.' });
@@ -28,16 +31,19 @@ router.post('/submit/:id', (req, res) => {
     
     //const userId = req.session.user.id;
     const userId = req.params.id;
-    const { score } = req.body;
+    const start = req.params.quizStart;
+    const durationMs = start ? Date.now() - start : null;
+    const durationS = Math.round(durationMs / 1000);
+    //const { score } = req.body;
     
-    if (typeof score !== 'number') {
+    if (typeof durationS !== 'number') {
       return res.status(400).json({ error: 'Invalid score provided.' });
     }
     
     // INSERT TIME-ATTACK-SCORE
     req.db.run(
       'INSERT INTO scores (user_id, time_attack_score) VALUES (?, ?)',
-      [userId, score],
+      [userId, durationS],
       (err) => {
         if (err) {
           console.error("Error inserting time attack score:", err);
