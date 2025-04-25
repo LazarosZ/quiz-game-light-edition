@@ -74,7 +74,7 @@ router.post('/submit/:id/:quizStart', (req, res) => {
                   console.error('Error updating average table:', err);
                   return res.status(500).json({ error: 'Database error updating average table', details: err });
                 }
-                return res.json({ message: 'Quiz submitted and average updated', testScore: score, newTimeAverage });
+                return res.json({ message: 'Quiz submitted and average updated', newTimeAverage });
               }
             );
           }
