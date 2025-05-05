@@ -7,9 +7,9 @@ const router = express.Router();
  //GET /api/admin/scores?username=<username>
  //Returns the score records for the user with the given username. 
  // ###################################################################    IMPORTANT, REACTIVATED ENDPOINT, WITH DURATION FIELD ADDED, AS REQUESTED FROM CLIENT
- 
-router.get('/scores', (req, res) => {
-  const username = req.query.username;
+ // na balw /:id
+router.get('/scores/:username', (req, res) => {
+  const username = req.params.username;// 
   if (!username) {
     return res.status(400).json({ error: 'Username is required' });
   }
