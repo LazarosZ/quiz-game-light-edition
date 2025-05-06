@@ -32,14 +32,14 @@ router.get('/scores/:username', (req, res) => {
 });
 
 // DELETE reset scores for specific user, selected through search-bar
-router.delete('/scores/reset/:role', (req, res) => {
+router.delete('/scores/reset/:role/:username', (req, res) => {
   //ADMIN CHECK
   const userRole = req.params.role;
   if (!userRole || userRole !== 'admin') {
     return res.status(401).json({ error: 'Something went Wrong, please try again.' });
   }
   
-  const username = req.query.username;
+  const username = req.params.username;
   if (!username) {
     return res.status(400).json({ error: 'Username is required to reset scores' });
   }
