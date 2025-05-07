@@ -117,8 +117,38 @@ router.post('/submit/:role/:id/:quizStart/:username', async (req, res) => {
     });
     
     const resultsArray = await Promise.all(answerPromises);
-    const score = resultsArray.filter(isCorrect => isCorrect === true).length;
+    let score = resultsArray.filter(isCorrect => isCorrect === true).length;
     console.log('Computed score:', score);
+    console.log('Answers Array:', resultsArray);
+
+// added logic to give bonus for xNumber of correct answers in a row, by clients request
+
+    let maxStreak = 0;
+    let currentStreak = 0;
+    for (const wasCorrect of resultsArray) {
+      if (wasCorrect) {
+        currentStreak++;
+        if (currentStreak > maxStreak) maxStreak = currentStreak;
+      } else {
+        currentStreak = 0;
+      }
+    }
+
+  let bonus = 0; 
+  if (maxStreak ==30) {
+    bonus = 500;
+  } else if (maxStreak >=20) {
+    bonus = 200;
+  } else if (maxStreak >=10) {
+    bonus = 100;
+  } else if(maxStreak >=5) {
+    bonus = 50;
+  } else {
+    bonus = 0;
+  }
+
+  score += bonus;
+  console.log(`Score: ${score - bonus}, bonus: ${bonus}, total: ${score}`);
     
     // INSERT QUIZ SCORE
     req.db.run(
